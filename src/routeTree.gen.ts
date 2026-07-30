@@ -16,6 +16,7 @@ import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oubl
 import { Route as ReinitialiserMotDePasseRouteImport } from './routes/reinitialiser-mot-de-passe'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedEbooksIndexRouteImport } from './routes/_authenticated/ebooks.index'
+import { Route as AuthenticatedEbooksIdRouteImport } from './routes/_authenticated/ebooks.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,11 @@ const AuthenticatedEbooksIndexRoute =
     path: '/ebooks/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEbooksIdRoute = AuthenticatedEbooksIdRouteImport.update({
+  id: '/ebooks/$id',
+  path: '/ebooks/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/ebooks/': typeof AuthenticatedEbooksIndexRoute
 }
 export interface FileRoutesByTo {
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/ebooks': typeof AuthenticatedEbooksIndexRoute
 }
 export interface FileRoutesById {
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/_authenticated/ebooks/': typeof AuthenticatedEbooksIndexRoute
 }
 export interface FileRouteTypes {
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
     | '/dashboard'
+    | '/ebooks/$id'
     | '/ebooks/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
     | '/dashboard'
+    | '/ebooks/$id'
     | '/ebooks'
   id:
     | '__root__'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
     | '/_authenticated/dashboard'
+    | '/_authenticated/ebooks/$id'
     | '/_authenticated/ebooks/'
   fileRoutesById: FileRoutesById
 }
@@ -166,16 +178,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEbooksIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ebooks/$id': {
+      id: '/_authenticated/ebooks/$id'
+      path: '/ebooks/$id'
+      fullPath: '/ebooks/$id'
+      preLoaderRoute: typeof AuthenticatedEbooksIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEbooksIdRoute: typeof AuthenticatedEbooksIdRoute
   AuthenticatedEbooksIndexRoute: typeof AuthenticatedEbooksIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEbooksIdRoute: AuthenticatedEbooksIdRoute,
   AuthenticatedEbooksIndexRoute: AuthenticatedEbooksIndexRoute,
 }
 
