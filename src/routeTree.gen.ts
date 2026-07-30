@@ -14,8 +14,13 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oublie'
 import { Route as ReinitialiserMotDePasseRouteImport } from './routes/reinitialiser-mot-de-passe'
+import { Route as AuthenticatedBibliothequeRouteImport } from './routes/_authenticated/bibliotheque'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
+import { Route as AuthenticatedTextesRouteImport } from './routes/_authenticated/textes'
+import { Route as AuthenticatedVeilleRouteImport } from './routes/_authenticated/veille'
+import { Route as AuthenticatedVideoRouteImport } from './routes/_authenticated/video'
+import { Route as AuthenticatedVisuelsRouteImport } from './routes/_authenticated/visuels'
 import { Route as AuthenticatedEbooksIndexRouteImport } from './routes/_authenticated/ebooks.index'
 import { Route as AuthenticatedEbooksIdRouteImport } from './routes/_authenticated/ebooks.$id'
 
@@ -43,6 +48,12 @@ const ReinitialiserMotDePasseRoute = ReinitialiserMotDePasseRouteImport.update({
   path: '/reinitialiser-mot-de-passe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedBibliothequeRoute =
+  AuthenticatedBibliothequeRouteImport.update({
+    id: '/bibliotheque',
+    path: '/bibliotheque',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -51,6 +62,26 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
   id: '/parametres',
   path: '/parametres',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTextesRoute = AuthenticatedTextesRouteImport.update({
+  id: '/textes',
+  path: '/textes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVeilleRoute = AuthenticatedVeilleRouteImport.update({
+  id: '/veille',
+  path: '/veille',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVideoRoute = AuthenticatedVideoRouteImport.update({
+  id: '/video',
+  path: '/video',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVisuelsRoute = AuthenticatedVisuelsRouteImport.update({
+  id: '/visuels',
+  path: '/visuels',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedEbooksIndexRoute =
@@ -70,8 +101,13 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
+  '/bibliotheque': typeof AuthenticatedBibliothequeRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/parametres': typeof AuthenticatedParametresRoute
+  '/textes': typeof AuthenticatedTextesRoute
+  '/veille': typeof AuthenticatedVeilleRoute
+  '/video': typeof AuthenticatedVideoRoute
+  '/visuels': typeof AuthenticatedVisuelsRoute
   '/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/ebooks/': typeof AuthenticatedEbooksIndexRoute
 }
@@ -80,8 +116,13 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
+  '/bibliotheque': typeof AuthenticatedBibliothequeRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/parametres': typeof AuthenticatedParametresRoute
+  '/textes': typeof AuthenticatedTextesRoute
+  '/veille': typeof AuthenticatedVeilleRoute
+  '/video': typeof AuthenticatedVideoRoute
+  '/visuels': typeof AuthenticatedVisuelsRoute
   '/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/ebooks': typeof AuthenticatedEbooksIndexRoute
 }
@@ -92,8 +133,13 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
+  '/_authenticated/bibliotheque': typeof AuthenticatedBibliothequeRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
+  '/_authenticated/textes': typeof AuthenticatedTextesRoute
+  '/_authenticated/veille': typeof AuthenticatedVeilleRoute
+  '/_authenticated/video': typeof AuthenticatedVideoRoute
+  '/_authenticated/visuels': typeof AuthenticatedVisuelsRoute
   '/_authenticated/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/_authenticated/ebooks/': typeof AuthenticatedEbooksIndexRoute
 }
@@ -104,8 +150,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
+    | '/bibliotheque'
     | '/dashboard'
     | '/parametres'
+    | '/textes'
+    | '/veille'
+    | '/video'
+    | '/visuels'
     | '/ebooks/$id'
     | '/ebooks/'
   fileRoutesByTo: FileRoutesByTo
@@ -114,8 +165,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
+    | '/bibliotheque'
     | '/dashboard'
     | '/parametres'
+    | '/textes'
+    | '/veille'
+    | '/video'
+    | '/visuels'
     | '/ebooks/$id'
     | '/ebooks'
   id:
@@ -125,8 +181,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
+    | '/_authenticated/bibliotheque'
     | '/_authenticated/dashboard'
     | '/_authenticated/parametres'
+    | '/_authenticated/textes'
+    | '/_authenticated/veille'
+    | '/_authenticated/video'
+    | '/_authenticated/visuels'
     | '/_authenticated/ebooks/$id'
     | '/_authenticated/ebooks/'
   fileRoutesById: FileRoutesById
@@ -176,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReinitialiserMotDePasseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/bibliotheque': {
+      id: '/_authenticated/bibliotheque'
+      path: '/bibliotheque'
+      fullPath: '/bibliotheque'
+      preLoaderRoute: typeof AuthenticatedBibliothequeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -188,6 +256,34 @@ declare module '@tanstack/react-router' {
       path: '/parametres'
       fullPath: '/parametres'
       preLoaderRoute: typeof AuthenticatedParametresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/textes': {
+      id: '/_authenticated/textes'
+      path: '/textes'
+      fullPath: '/textes'
+      preLoaderRoute: typeof AuthenticatedTextesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/veille': {
+      id: '/_authenticated/veille'
+      path: '/veille'
+      fullPath: '/veille'
+      preLoaderRoute: typeof AuthenticatedVeilleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/video': {
+      id: '/_authenticated/video'
+      path: '/video'
+      fullPath: '/video'
+      preLoaderRoute: typeof AuthenticatedVideoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/visuels': {
+      id: '/_authenticated/visuels'
+      path: '/visuels'
+      fullPath: '/visuels'
+      preLoaderRoute: typeof AuthenticatedVisuelsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/ebooks/': {
@@ -208,15 +304,25 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBibliothequeRoute: typeof AuthenticatedBibliothequeRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
+  AuthenticatedTextesRoute: typeof AuthenticatedTextesRoute
+  AuthenticatedVeilleRoute: typeof AuthenticatedVeilleRoute
+  AuthenticatedVideoRoute: typeof AuthenticatedVideoRoute
+  AuthenticatedVisuelsRoute: typeof AuthenticatedVisuelsRoute
   AuthenticatedEbooksIdRoute: typeof AuthenticatedEbooksIdRoute
   AuthenticatedEbooksIndexRoute: typeof AuthenticatedEbooksIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBibliothequeRoute: AuthenticatedBibliothequeRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
+  AuthenticatedTextesRoute: AuthenticatedTextesRoute,
+  AuthenticatedVeilleRoute: AuthenticatedVeilleRoute,
+  AuthenticatedVideoRoute: AuthenticatedVideoRoute,
+  AuthenticatedVisuelsRoute: AuthenticatedVisuelsRoute,
   AuthenticatedEbooksIdRoute: AuthenticatedEbooksIdRoute,
   AuthenticatedEbooksIndexRoute: AuthenticatedEbooksIndexRoute,
 }
@@ -234,3 +340,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
