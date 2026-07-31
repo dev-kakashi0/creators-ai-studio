@@ -17,12 +17,14 @@ import { Route as ReinitialiserMotDePasseRouteImport } from './routes/reinitiali
 import { Route as AuthenticatedBibliothequeRouteImport } from './routes/_authenticated/bibliotheque'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
+import { Route as AuthenticatedTarifsRouteImport } from './routes/_authenticated/tarifs'
 import { Route as AuthenticatedTextesRouteImport } from './routes/_authenticated/textes'
 import { Route as AuthenticatedVeilleRouteImport } from './routes/_authenticated/veille'
 import { Route as AuthenticatedVideoRouteImport } from './routes/_authenticated/video'
 import { Route as AuthenticatedVisuelsRouteImport } from './routes/_authenticated/visuels'
 import { Route as AuthenticatedEbooksIndexRouteImport } from './routes/_authenticated/ebooks.index'
 import { Route as AuthenticatedEbooksIdRouteImport } from './routes/_authenticated/ebooks.$id'
+import { Route as AuthenticatedEbooksNouveauRouteImport } from './routes/_authenticated/ebooks.nouveau'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +66,11 @@ const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
   path: '/parametres',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTarifsRoute = AuthenticatedTarifsRouteImport.update({
+  id: '/tarifs',
+  path: '/tarifs',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTextesRoute = AuthenticatedTextesRouteImport.update({
   id: '/textes',
   path: '/textes',
@@ -95,6 +102,12 @@ const AuthenticatedEbooksIdRoute = AuthenticatedEbooksIdRouteImport.update({
   path: '/ebooks/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEbooksNouveauRoute =
+  AuthenticatedEbooksNouveauRouteImport.update({
+    id: '/ebooks/nouveau',
+    path: '/ebooks/nouveau',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -104,11 +117,13 @@ export interface FileRoutesByFullPath {
   '/bibliotheque': typeof AuthenticatedBibliothequeRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/parametres': typeof AuthenticatedParametresRoute
+  '/tarifs': typeof AuthenticatedTarifsRoute
   '/textes': typeof AuthenticatedTextesRoute
   '/veille': typeof AuthenticatedVeilleRoute
   '/video': typeof AuthenticatedVideoRoute
   '/visuels': typeof AuthenticatedVisuelsRoute
   '/ebooks/$id': typeof AuthenticatedEbooksIdRoute
+  '/ebooks/nouveau': typeof AuthenticatedEbooksNouveauRoute
   '/ebooks/': typeof AuthenticatedEbooksIndexRoute
 }
 export interface FileRoutesByTo {
@@ -119,11 +134,13 @@ export interface FileRoutesByTo {
   '/bibliotheque': typeof AuthenticatedBibliothequeRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/parametres': typeof AuthenticatedParametresRoute
+  '/tarifs': typeof AuthenticatedTarifsRoute
   '/textes': typeof AuthenticatedTextesRoute
   '/veille': typeof AuthenticatedVeilleRoute
   '/video': typeof AuthenticatedVideoRoute
   '/visuels': typeof AuthenticatedVisuelsRoute
   '/ebooks/$id': typeof AuthenticatedEbooksIdRoute
+  '/ebooks/nouveau': typeof AuthenticatedEbooksNouveauRoute
   '/ebooks': typeof AuthenticatedEbooksIndexRoute
 }
 export interface FileRoutesById {
@@ -136,11 +153,13 @@ export interface FileRoutesById {
   '/_authenticated/bibliotheque': typeof AuthenticatedBibliothequeRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
+  '/_authenticated/tarifs': typeof AuthenticatedTarifsRoute
   '/_authenticated/textes': typeof AuthenticatedTextesRoute
   '/_authenticated/veille': typeof AuthenticatedVeilleRoute
   '/_authenticated/video': typeof AuthenticatedVideoRoute
   '/_authenticated/visuels': typeof AuthenticatedVisuelsRoute
   '/_authenticated/ebooks/$id': typeof AuthenticatedEbooksIdRoute
+  '/_authenticated/ebooks/nouveau': typeof AuthenticatedEbooksNouveauRoute
   '/_authenticated/ebooks/': typeof AuthenticatedEbooksIndexRoute
 }
 export interface FileRouteTypes {
@@ -153,11 +172,13 @@ export interface FileRouteTypes {
     | '/bibliotheque'
     | '/dashboard'
     | '/parametres'
+    | '/tarifs'
     | '/textes'
     | '/veille'
     | '/video'
     | '/visuels'
     | '/ebooks/$id'
+    | '/ebooks/nouveau'
     | '/ebooks/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -168,11 +189,13 @@ export interface FileRouteTypes {
     | '/bibliotheque'
     | '/dashboard'
     | '/parametres'
+    | '/tarifs'
     | '/textes'
     | '/veille'
     | '/video'
     | '/visuels'
     | '/ebooks/$id'
+    | '/ebooks/nouveau'
     | '/ebooks'
   id:
     | '__root__'
@@ -184,11 +207,13 @@ export interface FileRouteTypes {
     | '/_authenticated/bibliotheque'
     | '/_authenticated/dashboard'
     | '/_authenticated/parametres'
+    | '/_authenticated/tarifs'
     | '/_authenticated/textes'
     | '/_authenticated/veille'
     | '/_authenticated/video'
     | '/_authenticated/visuels'
     | '/_authenticated/ebooks/$id'
+    | '/_authenticated/ebooks/nouveau'
     | '/_authenticated/ebooks/'
   fileRoutesById: FileRoutesById
 }
@@ -258,6 +283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedParametresRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/tarifs': {
+      id: '/_authenticated/tarifs'
+      path: '/tarifs'
+      fullPath: '/tarifs'
+      preLoaderRoute: typeof AuthenticatedTarifsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/textes': {
       id: '/_authenticated/textes'
       path: '/textes'
@@ -300,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEbooksIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ebooks/nouveau': {
+      id: '/_authenticated/ebooks/nouveau'
+      path: '/ebooks/nouveau'
+      fullPath: '/ebooks/nouveau'
+      preLoaderRoute: typeof AuthenticatedEbooksNouveauRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -307,11 +346,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBibliothequeRoute: typeof AuthenticatedBibliothequeRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
+  AuthenticatedTarifsRoute: typeof AuthenticatedTarifsRoute
   AuthenticatedTextesRoute: typeof AuthenticatedTextesRoute
   AuthenticatedVeilleRoute: typeof AuthenticatedVeilleRoute
   AuthenticatedVideoRoute: typeof AuthenticatedVideoRoute
   AuthenticatedVisuelsRoute: typeof AuthenticatedVisuelsRoute
   AuthenticatedEbooksIdRoute: typeof AuthenticatedEbooksIdRoute
+  AuthenticatedEbooksNouveauRoute: typeof AuthenticatedEbooksNouveauRoute
   AuthenticatedEbooksIndexRoute: typeof AuthenticatedEbooksIndexRoute
 }
 
@@ -319,11 +360,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBibliothequeRoute: AuthenticatedBibliothequeRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
+  AuthenticatedTarifsRoute: AuthenticatedTarifsRoute,
   AuthenticatedTextesRoute: AuthenticatedTextesRoute,
   AuthenticatedVeilleRoute: AuthenticatedVeilleRoute,
   AuthenticatedVideoRoute: AuthenticatedVideoRoute,
   AuthenticatedVisuelsRoute: AuthenticatedVisuelsRoute,
   AuthenticatedEbooksIdRoute: AuthenticatedEbooksIdRoute,
+  AuthenticatedEbooksNouveauRoute: AuthenticatedEbooksNouveauRoute,
   AuthenticatedEbooksIndexRoute: AuthenticatedEbooksIndexRoute,
 }
 

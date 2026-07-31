@@ -47,6 +47,36 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_packs: {
+        Row: {
+          created_at: string
+          credits: number
+          id: string
+          name: string
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits: number
+          id: string
+          name: string
+          price: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          id?: string
+          name?: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       credit_transactions: {
         Row: {
           amount: number
@@ -113,10 +143,15 @@ export type Database = {
           cover_url: string | null
           created_at: string
           id: string
+          illustrations: Json
           is_favorite: boolean
           language: string
+          length: string
           outline: Json
+          published_at: string | null
           status: string
+          style: string
+          subtitle: string | null
           title: string
           tone: string | null
           topic: string | null
@@ -129,10 +164,15 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           id?: string
+          illustrations?: Json
           is_favorite?: boolean
           language?: string
+          length?: string
           outline?: Json
+          published_at?: string | null
           status?: string
+          style?: string
+          subtitle?: string | null
           title?: string
           tone?: string | null
           topic?: string | null
@@ -145,10 +185,15 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           id?: string
+          illustrations?: Json
           is_favorite?: boolean
           language?: string
+          length?: string
           outline?: Json
+          published_at?: string | null
           status?: string
+          style?: string
+          subtitle?: string | null
           title?: string
           tone?: string | null
           topic?: string | null
@@ -190,11 +235,48 @@ export type Database = {
         }
         Relationships: []
       }
+      plans: {
+        Row: {
+          created_at: string
+          features: Json
+          id: string
+          monthly_credits: number
+          name: string
+          price_monthly: number
+          sort_order: number
+          tagline: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          features?: Json
+          id: string
+          monthly_credits?: number
+          name: string
+          price_monthly?: number
+          sort_order?: number
+          tagline?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          features?: Json
+          id?: string
+          monthly_credits?: number
+          name?: string
+          price_monthly?: number
+          sort_order?: number
+          tagline?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
           credits: number
+          credits_renew_at: string | null
           full_name: string | null
           id: string
           notifications_enabled: boolean
@@ -206,6 +288,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           credits?: number
+          credits_renew_at?: string | null
           full_name?: string | null
           id: string
           notifications_enabled?: boolean
@@ -217,6 +300,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           credits?: number
+          credits_renew_at?: string | null
           full_name?: string | null
           id?: string
           notifications_enabled?: boolean
