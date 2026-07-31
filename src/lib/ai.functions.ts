@@ -47,11 +47,9 @@ export const generateOutline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => OutlineInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.rpc("consume_credits", {
-      _amount: 5,
-      _reason: "ebook_outline",
-    });
-    if (error) throw new Error("Crédits IA insuffisants.");
+    const { consumeCredits } = await import("@/lib/credits.server");
+    await consumeCredits(context.userId, 5, "ebook_outline");
+
 
     const raw = await callGateway([
       {
@@ -93,11 +91,9 @@ export const generateChapter = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ChapterInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.rpc("consume_credits", {
-      _amount: 3,
-      _reason: "ebook_chapter",
-    });
-    if (error) throw new Error("Crédits IA insuffisants.");
+    const { consumeCredits } = await import("@/lib/credits.server");
+    await consumeCredits(context.userId, 3, "ebook_chapter");
+
 
     const content = await callGateway([
       {

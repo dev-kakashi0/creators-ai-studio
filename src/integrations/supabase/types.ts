@@ -274,6 +274,10 @@ export type Database = {
         Args: { _amount: number; _reason: string }
         Returns: number
       }
+      consume_credits_for: {
+        Args: { _amount: number; _reason: string; _user_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
