@@ -13,11 +13,9 @@ export const generateCover = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => CoverInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { error: creditError } = await context.supabase.rpc("consume_credits", {
-      _amount: 8,
-      _reason: "ebook_cover",
-    });
-    if (creditError) throw new Error("Crédits IA insuffisants.");
+    const { consumeCredits } = await import("@/lib/credits.server");
+    await consumeCredits(context.userId, 8, "ebook_cover");
+
 
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Service IA indisponible.");
