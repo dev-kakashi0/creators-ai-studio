@@ -22,7 +22,9 @@ import {
   STYLES,
   generationCost,
 } from "@/lib/ebook-config";
+import { QUALITIES, THEMES } from "@/lib/ebook-brand";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/ebooks/nouveau")({
   component: NewEbookWizard,
