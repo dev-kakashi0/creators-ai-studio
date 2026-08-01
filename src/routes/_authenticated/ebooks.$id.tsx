@@ -30,7 +30,12 @@ import { exportDocx, type EbookOutline } from "@/lib/export-docx";
 import { exportPdf } from "@/lib/export-pdf";
 import { pathToDataUrl, signedUrl, uploadImage } from "@/lib/ebook-assets";
 import { CREDITS, LANGUAGES, STYLES } from "@/lib/ebook-config";
+import { FONT_CHOICES, QUALITIES, THEMES, type BrandingJson } from "@/lib/ebook-brand";
+import { brandingOf, identityOf, watermarkForPlan } from "@/lib/ebook-identity";
+import { useProfile } from "@/lib/auth";
 import type { Tables } from "@/integrations/supabase/types";
+
+
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/ebooks/$id")({
@@ -52,6 +57,8 @@ type Ebook = Tables<"ebooks">;
 function EbookEditor() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+
   const runOutline = useServerFn(generateOutline);
   const runChapter = useServerFn(generateChapter);
   const runCover = useServerFn(generateCover);
@@ -403,10 +410,13 @@ function EbookEditor() {
     if (!draft || exporting) return;
     setExporting(format);
     try {
-      const [coverDataUrl, ...illustrationDataUrls] = await Promise.all([
-        pathToDataUrl(draft.cover_url),
-        ...(outline.chapitres ?? []).map((_, index) => pathToDataUrl(illustrations[index])),
-      ]);
+      const [coverDataUrl, authorPhotoDataUrl, logoDataUrl, ...illustrationDataUrls] =
+        await Promise.all([
+          pathToDataUrl(draft.cover_url),
+          pathToDataUrl(draft.author_photo),
+          pathToDataUrl(draft.logo_url),
+          ...(outline.chapitres ?? []).map((_, index) => pathToDataUrl(illustrations[index])),
+        ]);
       const payload = {
         title: draft.title,
         outline,
@@ -415,7 +425,13 @@ function EbookEditor() {
         illustrationDataUrls,
       };
       if (format === "pdf") {
-        await exportPdf({ ...payload, watermark: false });
+        await exportPdf({
+          ...payload,
+          identity: identityOf(draft, { authorPhotoDataUrl, logoDataUrl }),
+          language: draft.language,
+          watermark: watermarkForPlan(profile?.plan),
+        });
+
       } else {
         await exportDocx({ ...payload, audience: draft.audience });
       }
@@ -606,6 +622,129 @@ function EbookEditor() {
               Régénérer le plan ({CREDITS.outline})
             </button>
           </div>
+
+          <div className="card-premium space-y-4 p-5">
+            <h2 className="font-display text-base font-bold">Identité & thème</h2>
+            <Field label="Nom de l'auteur">
+              <input
+                value={draft.author_name ?? ""}
+                onChange={(e) => apply((prev) => ({ ...prev, author_name: e.target.value }))}
+                maxLength={120}
+                placeholder="Votre nom"
+                className="h-11 w-full rounded-xl border border-input bg-card px-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-ring/15"
+              />
+            </Field>
+            <Field label="Bio de l'auteur">
+              <textarea
+                value={draft.author_bio ?? ""}
+                onChange={(e) => apply((prev) => ({ ...prev, author_bio: e.target.value }))}
+                maxLength={800}
+                rows={3}
+                className="w-full resize-none rounded-xl border border-input bg-card p-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-ring/15"
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Éditeur">
+                <input
+                  value={draft.publisher ?? ""}
+                  onChange={(e) => apply((prev) => ({ ...prev, publisher: e.target.value }))}
+                  maxLength={120}
+                  className="h-11 w-full rounded-xl border border-input bg-card px-3 text-sm outline-none focus:border-primary"
+                />
+              </Field>
+              <Field label="Site web">
+                <input
+                  value={draft.website ?? ""}
+                  onChange={(e) => apply((prev) => ({ ...prev, website: e.target.value }))}
+                  maxLength={200}
+                  className="h-11 w-full rounded-xl border border-input bg-card px-3 text-sm outline-none focus:border-primary"
+                />
+              </Field>
+            </div>
+            <Field label="Thème du livre">
+              <select
+                value={draft.theme ?? "modern"}
+                onChange={(e) => apply((prev) => ({ ...prev, theme: e.target.value }))}
+                className="h-11 w-full rounded-xl border border-input bg-card px-3 text-sm outline-none focus:border-primary"
+              >
+                {THEMES.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Qualité">
+                <select
+                  value={draft.quality ?? "premium"}
+                  onChange={(e) => apply((prev) => ({ ...prev, quality: e.target.value }))}
+                  className="h-11 w-full rounded-xl border border-input bg-card px-3 text-sm outline-none focus:border-primary"
+                >
+                  {QUALITIES.map((q) => (
+                    <option key={q.id} value={q.id}>
+                      {q.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Typographie">
+                <select
+                  value={brandingOf(draft).font ?? ""}
+                  onChange={(e) =>
+                    apply((prev) => ({
+                      ...prev,
+                      branding: {
+                        ...brandingOf(prev),
+                        font: e.target.value || undefined,
+                      } as never,
+                    }))
+                  }
+                  className="h-11 w-full rounded-xl border border-input bg-card px-3 text-sm outline-none focus:border-primary"
+                >
+                  <option value="">Thème par défaut</option>
+                  {FONT_CHOICES.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            <div className="flex items-center gap-3">
+              {(["primary", "secondary", "accent"] as const).map((key) => (
+                <label key={key} className="flex flex-1 items-center gap-2 text-xs capitalize">
+                  <input
+                    type="color"
+                    value={
+                      (brandingOf(draft)[key] as string | undefined) ??
+                      (THEMES.find((t) => t.id === (draft.theme ?? "modern")) ?? THEMES[0]).swatch[
+                        key === "primary" ? 0 : key === "secondary" ? 1 : 2
+                      ]
+                    }
+                    onChange={(e) =>
+                      apply((prev) => ({
+                        ...prev,
+                        branding: {
+                          ...brandingOf(prev),
+                          [key]: e.target.value,
+                        } as BrandingJson as never,
+                      }))
+                    }
+                    className="h-8 w-8 cursor-pointer rounded-lg border border-input bg-card"
+                  />
+                  <span className="text-muted-foreground">{key}</span>
+                </label>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {watermarkForPlan(profile?.plan)
+                ? "Plan gratuit : une mention « Created with Solenya AI » figure en dernière page."
+                : "Plan payant : exports 100 % à votre marque, sans mention Solenya."}
+            </p>
+          </div>
+
+
 
           <div className="card-premium space-y-3 p-5">
             <h2 className="font-display text-base font-bold">Couverture</h2>

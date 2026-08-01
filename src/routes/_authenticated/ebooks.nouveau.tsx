@@ -22,7 +22,9 @@ import {
   STYLES,
   generationCost,
 } from "@/lib/ebook-config";
+import { QUALITIES, THEMES } from "@/lib/ebook-brand";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/ebooks/nouveau")({
   component: NewEbookWizard,
@@ -38,7 +40,7 @@ export const Route = createFileRoute("/_authenticated/ebooks/nouveau")({
   }),
 });
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 function NewEbookWizard() {
   const navigate = useNavigate();
@@ -52,6 +54,11 @@ function NewEbookWizard() {
   const [audience, setAudience] = useState<string>("");
   const [length, setLength] = useState<string>("standard");
   const [withIllustrations, setWithIllustrations] = useState(true);
+  const [authorName, setAuthorName] = useState("");
+  const [publisher, setPublisher] = useState("");
+  const [website, setWebsite] = useState("");
+  const [theme, setTheme] = useState<string>("modern");
+  const [quality, setQuality] = useState<string>("premium");
 
   const cost = useMemo(
     () => generationCost(length, withIllustrations, true),
@@ -60,7 +67,14 @@ function NewEbookWizard() {
   const credits = profile?.credits ?? 0;
   const canAfford = credits >= cost;
 
-  const canContinue = [topic.trim().length >= 3, true, true, audience.trim().length > 0, true][step];
+  const canContinue = [
+    topic.trim().length >= 3,
+    true,
+    true,
+    audience.trim().length > 0,
+    true,
+    true,
+  ][step];
 
   async function launch() {
     if (!canAfford) {
@@ -75,6 +89,11 @@ function NewEbookWizard() {
         audience: audience.trim(),
         length,
         withIllustrations,
+        authorName: authorName.trim() || (profile?.full_name ?? ""),
+        publisher: publisher.trim(),
+        website: website.trim(),
+        theme,
+        quality,
       });
       toast.success("Ton ebook est prêt !");
       navigate({ to: "/ebooks/$id", params: { id } });
@@ -82,6 +101,7 @@ function NewEbookWizard() {
       toast.error(error instanceof Error ? error.message : "La génération a échoué.");
     }
   }
+
 
   if (running || steps.some((s) => s.state !== "pending")) {
     return (
@@ -253,6 +273,61 @@ function NewEbookWizard() {
             )}
 
             {step === 5 && (
+              <StepBlock
+                index={6}
+                title="Identité & thème"
+                hint="Ces informations apparaissent sur la couverture, la page de copyright et les pieds de page."
+              >
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    value={authorName}
+                    onChange={(e) => setAuthorName(e.target.value)}
+                    maxLength={120}
+                    placeholder="Nom de l'auteur"
+                    className="h-12 w-full rounded-2xl border border-input bg-card px-4 text-base outline-none focus:border-primary focus:ring-4 focus:ring-ring/15"
+                  />
+                  <input
+                    value={publisher}
+                    onChange={(e) => setPublisher(e.target.value)}
+                    maxLength={120}
+                    placeholder="Éditeur / marque (optionnel)"
+                    className="h-12 w-full rounded-2xl border border-input bg-card px-4 text-base outline-none focus:border-primary focus:ring-4 focus:ring-ring/15"
+                  />
+                  <input
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    maxLength={200}
+                    placeholder="Site web (optionnel)"
+                    className="h-12 w-full rounded-2xl border border-input bg-card px-4 text-base outline-none focus:border-primary focus:ring-4 focus:ring-ring/15 sm:col-span-2"
+                  />
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {THEMES.map((t) => (
+                    <Choice
+                      key={t.id}
+                      active={theme === t.id}
+                      onClick={() => setTheme(t.id)}
+                      title={t.label}
+                      subtitle={t.hint}
+                    />
+                  ))}
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                  {QUALITIES.map((q) => (
+                    <Choice
+                      key={q.id}
+                      active={quality === q.id}
+                      onClick={() => setQuality(q.id)}
+                      title={q.label}
+                      subtitle={q.hint}
+                    />
+                  ))}
+                </div>
+              </StepBlock>
+            )}
+
+            {step === 6 && (
+
               <StepBlock index={6} title="Tout est prêt" hint="Vérifie le brief puis lance la génération.">
                 <dl className="grid gap-3 sm:grid-cols-2">
                   <Recap label="Sujet" value={topic} />

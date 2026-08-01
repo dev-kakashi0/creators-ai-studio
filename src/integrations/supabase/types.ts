@@ -139,6 +139,10 @@ export type Database = {
       ebooks: {
         Row: {
           audience: string | null
+          author_bio: string | null
+          author_name: string | null
+          author_photo: string | null
+          branding: Json
           chapters: Json
           cover_url: string | null
           created_at: string
@@ -147,19 +151,28 @@ export type Database = {
           is_favorite: boolean
           language: string
           length: string
+          logo_url: string | null
           outline: Json
           published_at: string | null
+          publisher: string | null
+          quality: string
           status: string
           style: string
           subtitle: string | null
+          theme: string
           title: string
           tone: string | null
           topic: string | null
           updated_at: string
           user_id: string
+          website: string | null
         }
         Insert: {
           audience?: string | null
+          author_bio?: string | null
+          author_name?: string | null
+          author_photo?: string | null
+          branding?: Json
           chapters?: Json
           cover_url?: string | null
           created_at?: string
@@ -168,19 +181,28 @@ export type Database = {
           is_favorite?: boolean
           language?: string
           length?: string
+          logo_url?: string | null
           outline?: Json
           published_at?: string | null
+          publisher?: string | null
+          quality?: string
           status?: string
           style?: string
           subtitle?: string | null
+          theme?: string
           title?: string
           tone?: string | null
           topic?: string | null
           updated_at?: string
           user_id: string
+          website?: string | null
         }
         Update: {
           audience?: string | null
+          author_bio?: string | null
+          author_name?: string | null
+          author_photo?: string | null
+          branding?: Json
           chapters?: Json
           cover_url?: string | null
           created_at?: string
@@ -189,16 +211,21 @@ export type Database = {
           is_favorite?: boolean
           language?: string
           length?: string
+          logo_url?: string | null
           outline?: Json
           published_at?: string | null
+          publisher?: string | null
+          quality?: string
           status?: string
           style?: string
           subtitle?: string | null
+          theme?: string
           title?: string
           tone?: string | null
           topic?: string | null
           updated_at?: string
           user_id?: string
+          website?: string | null
         }
         Relationships: []
       }

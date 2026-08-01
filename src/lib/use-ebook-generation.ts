@@ -33,7 +33,13 @@ export type GenerationBrief = {
   audience: string;
   length: string;
   withIllustrations: boolean;
+  authorName?: string;
+  publisher?: string;
+  website?: string;
+  theme?: string;
+  quality?: string;
 };
+
 
 /** Exécute des tâches en parallèle avec une limite de concurrence. */
 async function pool<T, R>(items: T[], limit: number, task: (item: T, index: number) => Promise<R>) {
@@ -115,6 +121,12 @@ export function useEbookGeneration() {
             outline: outline as never,
             chapters: new Array(outline.chapitres?.length ?? 0).fill("") as never,
             status: "draft",
+            author_name: brief.authorName ?? null,
+            publisher: brief.publisher || null,
+            website: brief.website || null,
+            theme: brief.theme ?? "modern",
+            quality: brief.quality ?? "premium",
+
           })
           .select("id")
           .single();
