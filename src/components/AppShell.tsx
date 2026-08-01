@@ -11,6 +11,7 @@ import {
   Menu,
   PenLine,
   Settings,
+  CreditCard,
   Sparkles,
   Video,
   X,
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { to: "/video", label: "Vidéo", Icon: Video },
   { to: "/veille", label: "Niches & Veille", Icon: Compass },
   { to: "/bibliotheque", label: "Bibliothèque", Icon: Library },
+  { to: "/tarifs", label: "Tarifs & crédits", Icon: CreditCard },
 ] as const;
 
 export function AppShell({
@@ -143,10 +145,13 @@ export function AppShell({
           </div>
           <div className="flex items-center gap-2 md:gap-3">
             {actions}
-            <div className="hidden items-center gap-1.5 rounded-full bg-primary-soft px-3 py-2 text-sm font-semibold text-primary sm:flex">
+            <Link
+              to="/tarifs"
+              className="hidden items-center gap-1.5 rounded-full bg-primary-soft px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 sm:flex"
+            >
               <Sparkles size={14} />
               {profile?.credits ?? 0} crédits
-            </div>
+            </Link>
             <button
               className="hidden size-10 items-center justify-center rounded-xl border border-border text-muted-foreground transition-colors hover:text-primary sm:flex"
               aria-label="Notifications"
