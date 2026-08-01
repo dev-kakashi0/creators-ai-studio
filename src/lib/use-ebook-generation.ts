@@ -121,6 +121,12 @@ export function useEbookGeneration() {
             outline: outline as never,
             chapters: new Array(outline.chapitres?.length ?? 0).fill("") as never,
             status: "draft",
+            author_name: brief.authorName ?? null,
+            publisher: brief.publisher || null,
+            website: brief.website || null,
+            theme: brief.theme ?? "modern",
+            quality: brief.quality ?? "premium",
+
           })
           .select("id")
           .single();
