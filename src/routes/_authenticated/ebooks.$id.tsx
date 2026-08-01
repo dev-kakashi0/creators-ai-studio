@@ -408,10 +408,13 @@ function EbookEditor() {
     if (!draft || exporting) return;
     setExporting(format);
     try {
-      const [coverDataUrl, ...illustrationDataUrls] = await Promise.all([
-        pathToDataUrl(draft.cover_url),
-        ...(outline.chapitres ?? []).map((_, index) => pathToDataUrl(illustrations[index])),
-      ]);
+      const [coverDataUrl, authorPhotoDataUrl, logoDataUrl, ...illustrationDataUrls] =
+        await Promise.all([
+          pathToDataUrl(draft.cover_url),
+          pathToDataUrl(draft.author_photo),
+          pathToDataUrl(draft.logo_url),
+          ...(outline.chapitres ?? []).map((_, index) => pathToDataUrl(illustrations[index])),
+        ]);
       const payload = {
         title: draft.title,
         outline,
@@ -420,7 +423,13 @@ function EbookEditor() {
         illustrationDataUrls,
       };
       if (format === "pdf") {
-        await exportPdf({ ...payload, watermark: false });
+        await exportPdf({
+          ...payload,
+          identity: identityOf(draft, { authorPhotoDataUrl, logoDataUrl }),
+          language: draft.language,
+          watermark: watermarkForPlan(profile?.plan),
+        });
+
       } else {
         await exportDocx({ ...payload, audience: draft.audience });
       }
