@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { motion } from "motion/react";
-import { BookOpen, Copy, Loader2, Plus, Search, Star, Trash2 } from "lucide-react";
+import { BookOpen, Copy, Loader2, Plus, Search, Sparkles, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
