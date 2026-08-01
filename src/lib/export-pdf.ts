@@ -1,5 +1,11 @@
 import { jsPDF } from "jspdf";
 import type { EbookOutline } from "@/lib/export-docx";
+import {
+  authorOrFallback,
+  resolvePalette,
+  type BookIdentity,
+  type Rgb,
+} from "@/lib/ebook-brand";
 
 export type PdfEbook = {
   title: string;
@@ -8,21 +14,44 @@ export type PdfEbook = {
   /** data URLs (image/png|jpeg) */
   coverDataUrl?: string | null;
   illustrationDataUrls?: Array<string | null>;
+  /** Mention discrète en dernière page (plan gratuit uniquement). */
   watermark?: boolean;
+  identity: BookIdentity;
+  language?: string | null;
+  keywords?: string[];
 };
 
 const PAGE_W = 210;
 const PAGE_H = 297;
-const M_X = 22;
-const M_TOP = 26;
-const M_BOTTOM = 24;
+const M_X = 24;
+const M_TOP = 30;
+const M_BOTTOM = 26;
 const CONTENT_W = PAGE_W - M_X * 2;
 
 type Block =
   | { type: "h2"; text: string }
   | { type: "p"; text: string }
   | { type: "li"; text: string }
-  | { type: "callout"; label: string; text: string };
+  | { type: "quote"; text: string }
+  | { type: "callout"; kind: CalloutKind; label: string; text: string };
+
+type CalloutKind = "tip" | "warning" | "pro" | "example" | "key";
+
+const CALLOUTS: Array<{ kind: CalloutKind; match: RegExp; icon: string }> = [
+  { kind: "tip", match: /^(astuce|tip|conseil)/i, icon: "★" },
+  { kind: "warning", match: /^(attention|warning|erreur|piège)/i, icon: "!" },
+  { kind: "pro", match: /^(pro|expert|avancé)/i, icon: "◆" },
+  { kind: "example", match: /^(exemple|cas|étude)/i, icon: "▸" },
+  { kind: "key", match: /^(clé|à retenir|résumé|takeaway|checklist|plan d'action|ressources)/i, icon: "✓" },
+];
+
+function calloutKind(label: string): CalloutKind | null {
+  return CALLOUTS.find((c) => c.match.test(label))?.kind ?? null;
+}
+
+function clean(text: string) {
+  return text.replace(/\*\*/g, "").replace(/__/g, "").replace(/`/g, "").trim();
+}
 
 function parseMarkdown(raw: string): Block[] {
   const blocks: Block[] = [];
@@ -34,28 +63,26 @@ function parseMarkdown(raw: string): Block[] {
       blocks.push({ type: "h2", text: clean(h[1]) });
       continue;
     }
+    const quote = text.match(/^>\s*(.*)$/);
+    if (quote) {
+      blocks.push({ type: "quote", text: clean(quote[1]) });
+      continue;
+    }
+    const callout = text.match(/^\*\*(.{2,40}?)\s*:\*\*\s*(.*)$/);
+    if (callout && callout[2]) {
+      const label = clean(callout[1]);
+      const kind = calloutKind(label);
+      blocks.push({ type: "callout", kind: kind ?? "tip", label, text: clean(callout[2]) });
+      continue;
+    }
     const li = text.match(/^[-*•]\s+(.*)$/);
     if (li) {
       blocks.push({ type: "li", text: clean(li[1]) });
       continue;
     }
-    const callout = text.match(/^\*\*(.{2,30}?)\s*:\*\*\s*(.*)$/);
-    if (callout && callout[2]) {
-      blocks.push({ type: "callout", label: clean(callout[1]), text: clean(callout[2]) });
-      continue;
-    }
     blocks.push({ type: "p", text: clean(text) });
   }
   return blocks;
-}
-
-function clean(text: string) {
-  return text
-    .replace(/\*\*/g, "")
-    .replace(/__/g, "")
-    .replace(/`/g, "")
-    .replace(/^\d+\.\s*/, (m) => m)
-    .trim();
 }
 
 async function imageSize(dataUrl: string) {
@@ -67,14 +94,39 @@ async function imageSize(dataUrl: string) {
   });
 }
 
+function mix(a: Rgb, b: Rgb, ratio: number): Rgb {
+  return [
+    Math.round(a[0] + (b[0] - a[0]) * ratio),
+    Math.round(a[1] + (b[1] - a[1]) * ratio),
+    Math.round(a[2] + (b[2] - a[2]) * ratio),
+  ];
+}
+
 export async function exportPdf(ebook: PdfEbook) {
   const outline = ebook.outline ?? {};
   const title = outline.titre || ebook.title;
   const subtitle = outline.sous_titre ?? "";
+  const theme = resolvePalette(ebook.identity);
+  const author = authorOrFallback(ebook.identity.authorName);
+  const publisher = (ebook.identity.publisher ?? "").trim();
+  const white: Rgb = [255, 255, 255];
+  const soft = mix(theme.surface, white, 0.25);
+
   const doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
+  doc.setProperties({
+    title,
+    author,
+    subject: subtitle || title,
+    keywords: (ebook.keywords ?? []).join(", "),
+    creator: publisher || author,
+  });
 
   let y = M_TOP;
   const tocEntries: Array<{ label: string; page: number; level: 0 | 1 }> = [];
+
+  const setFill = (c: Rgb) => doc.setFillColor(c[0], c[1], c[2]);
+  const setText = (c: Rgb) => doc.setTextColor(c[0], c[1], c[2]);
+  const setDraw = (c: Rgb) => doc.setDrawColor(c[0], c[1], c[2]);
 
   const newPage = () => {
     doc.addPage();
@@ -84,123 +136,326 @@ export async function exportPdf(ebook: PdfEbook) {
     if (y + needed > PAGE_H - M_BOTTOM) newPage();
   };
 
-  // --- Page 1 : couverture ---
+  // ---------------------------------------------------------------- Couverture
   if (ebook.coverDataUrl) {
     doc.addImage(ebook.coverDataUrl, "PNG", 0, 0, PAGE_W, PAGE_H, undefined, "FAST");
-    newPage();
+  } else {
+    setFill(theme.secondary);
+    doc.rect(0, 0, PAGE_W, PAGE_H, "F");
+    setFill(theme.primary);
+    doc.rect(0, PAGE_H - 120, PAGE_W, 6, "F");
   }
 
-  // --- Page de titre ---
-  doc.setTextColor(30, 41, 90);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.text("SOLENYA · STUDIO DE CRÉATION", PAGE_W / 2, 70, { align: "center" });
+  // Voile + typographie composée sur la couverture
+  setFill(theme.secondary);
+  doc.setGState(doc.GState({ opacity: 0.62 }));
+  doc.rect(0, PAGE_H - 132, PAGE_W, 132, "F");
+  doc.setGState(doc.GState({ opacity: 1 }));
 
-  doc.setTextColor(17, 20, 35);
+  setFill(theme.primary);
+  doc.rect(M_X, PAGE_H - 116, 26, 2.4, "F");
+
+  doc.setFont(theme.headingFont, "bold");
+  doc.setFontSize(34);
+  setText(white);
+  const coverTitle = doc.splitTextToSize(title, CONTENT_W);
+  doc.text(coverTitle, M_X, PAGE_H - 96);
+
+  let coverY = PAGE_H - 96 + coverTitle.length * 13;
+  if (subtitle) {
+    doc.setFont(theme.font, "normal");
+    doc.setFontSize(13);
+    setText(mix(white, theme.muted, 0.35));
+    const sub = doc.splitTextToSize(subtitle, CONTENT_W - 6);
+    doc.text(sub, M_X, coverY + 2);
+    coverY += sub.length * 6 + 4;
+  }
+
+  doc.setFont(theme.font, "bold");
+  doc.setFontSize(12);
+  setText(theme.accent);
+  doc.text(author.toUpperCase(), M_X, PAGE_H - 30);
+  if (publisher) {
+    doc.setFont(theme.font, "normal");
+    doc.setFontSize(9);
+    setText(mix(white, theme.muted, 0.4));
+    doc.text(publisher, M_X, PAGE_H - 22);
+  }
+
+  // ---------------------------------------------------------------- Page de titre
+  newPage();
+  doc.setFont(theme.headingFont, "bold");
   doc.setFontSize(30);
+  setText(theme.ink);
   const titleLines = doc.splitTextToSize(title, CONTENT_W);
-  doc.text(titleLines, PAGE_W / 2, 105, { align: "center" });
+  doc.text(titleLines, PAGE_W / 2, 100, { align: "center" });
 
   if (subtitle) {
-    doc.setFont("helvetica", "normal");
+    doc.setFont(theme.font, "normal");
     doc.setFontSize(13);
-    doc.setTextColor(90, 96, 120);
-    doc.text(doc.splitTextToSize(subtitle, CONTENT_W - 10), PAGE_W / 2, 105 + titleLines.length * 11 + 8, {
+    setText(theme.muted);
+    doc.text(doc.splitTextToSize(subtitle, CONTENT_W - 10), PAGE_W / 2, 100 + titleLines.length * 11 + 6, {
       align: "center",
     });
   }
 
-  doc.setDrawColor(60, 90, 220);
+  setDraw(theme.primary);
   doc.setLineWidth(0.8);
-  doc.line(PAGE_W / 2 - 18, 200, PAGE_W / 2 + 18, 200);
+  doc.line(PAGE_W / 2 - 18, 190, PAGE_W / 2 + 18, 190);
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(120, 126, 150);
-  doc.text(
-    new Date().toLocaleDateString("fr-FR", { year: "numeric", month: "long" }),
-    PAGE_W / 2,
-    212,
-    { align: "center" },
-  );
+  doc.setFont(theme.font, "bold");
+  doc.setFontSize(12);
+  setText(theme.ink);
+  doc.text(author, PAGE_W / 2, 202, { align: "center" });
+  if (publisher) {
+    doc.setFont(theme.font, "normal");
+    doc.setFontSize(9);
+    setText(theme.muted);
+    doc.text(publisher, PAGE_W / 2, 210, { align: "center" });
+  }
 
-  // --- Placeholder du sommaire (rempli après coup) ---
+  // ---------------------------------------------------------------- Copyright
+  newPage();
+  const year = new Date().getFullYear();
+  const copyrightLines = [
+    `© ${year} ${author}`,
+    "Tous droits réservés.",
+    "",
+    publisher ? `Éditeur : ${publisher}` : "",
+    ebook.identity.website ? `Site web : ${ebook.identity.website}` : "",
+    ebook.identity.email ? `Contact : ${ebook.identity.email}` : "",
+    ebook.identity.edition ? `Édition : ${ebook.identity.edition}` : `Édition : Première édition, ${year}`,
+    "",
+    "Aucune partie de cet ouvrage ne peut être reproduite, distribuée ou transmise sous quelque forme que ce soit sans l'autorisation écrite préalable de l'auteur, sauf citations brèves dans le cadre d'une critique ou d'une revue.",
+  ].filter((line, index, all) => !(line === "" && all[index - 1] === ""));
+
+  doc.setFont(theme.font, "normal");
+  doc.setFontSize(9.5);
+  setText(theme.muted);
+  let copyY = PAGE_H - 110;
+  for (const line of copyrightLines) {
+    const wrapped = doc.splitTextToSize(line, CONTENT_W);
+    doc.text(wrapped, M_X, copyY);
+    copyY += wrapped.length * 5 + (line ? 1.5 : 2);
+  }
+
+  // ---------------------------------------------------------------- Sommaire (réservé)
   const tocPageIndex = doc.getNumberOfPages() + 1;
   newPage();
   newPage();
 
   const bodyStart = doc.getNumberOfPages();
 
-  // --- Rendu du corps ---
+  // ---------------------------------------------------------------- Rendu
   const writeHeading = (text: string, size: number, spacingBefore: number) => {
-    ensure(spacingBefore + size * 0.6);
+    ensure(spacingBefore + size * 0.7);
     y += spacingBefore;
-    doc.setFont("helvetica", "bold");
+    doc.setFont(theme.headingFont, "bold");
     doc.setFontSize(size);
-    doc.setTextColor(17, 20, 35);
+    setText(theme.ink);
     const lines = doc.splitTextToSize(text, CONTENT_W);
     for (const line of lines) {
       ensure(size * 0.55);
       doc.text(line, M_X, y);
       y += size * 0.55;
     }
-    y += 3;
+    y += 3.5;
   };
 
-  const writeBlocks = (blocks: Block[]) => {
+  const calloutStyle = (kind: CalloutKind) => {
+    switch (kind) {
+      case "warning":
+        return { bar: [214, 108, 40] as Rgb, bg: [253, 243, 232] as Rgb };
+      case "key":
+        return { bar: theme.accent, bg: soft };
+      case "example":
+        return { bar: theme.secondary, bg: mix(theme.surface, white, 0.4) };
+      default:
+        return { bar: theme.primary, bg: theme.surface };
+    }
+  };
+
+  const writeBlocks = (blocks: Block[], opts?: { dropCap?: boolean }) => {
+    let firstParagraph = Boolean(opts?.dropCap) && theme.dropCap;
+
     for (const block of blocks) {
       if (block.type === "h2") {
-        writeHeading(block.text, 14, 5);
+        writeHeading(block.text, 14, 6);
         continue;
       }
+
+      if (block.type === "quote") {
+        doc.setFont(theme.headingFont, "italic");
+        doc.setFontSize(12.5);
+        setText(theme.secondary);
+        const lines = doc.splitTextToSize(block.text, CONTENT_W - 16);
+        ensure(lines.length * 6.4 + 8);
+        setFill(theme.primary);
+        doc.rect(M_X, y - 4, 1.6, lines.length * 6.4 + 3, "F");
+        doc.text(lines, M_X + 8, y + 1);
+        y += lines.length * 6.4 + 8;
+        continue;
+      }
+
       if (block.type === "callout") {
-        doc.setFont("helvetica", "normal");
+        const style = calloutStyle(block.kind);
+        doc.setFont(theme.font, "normal");
         doc.setFontSize(10.5);
-        const lines = doc.splitTextToSize(`${block.label} : ${block.text}`, CONTENT_W - 12);
-        const boxH = lines.length * 5.2 + 8;
+        const lines = doc.splitTextToSize(block.text, CONTENT_W - 18);
+        const boxH = lines.length * 5.2 + 15;
         ensure(boxH + 4);
-        doc.setFillColor(240, 244, 255);
-        doc.roundedRect(M_X, y - 1, CONTENT_W, boxH, 2.5, 2.5, "F");
-        doc.setFillColor(60, 90, 220);
-        doc.rect(M_X, y - 1, 1.4, boxH, "F");
-        doc.setTextColor(35, 45, 90);
-        doc.text(lines, M_X + 7, y + 5.5);
-        y += boxH + 5;
+        setFill(style.bg);
+        doc.roundedRect(M_X, y - 2, CONTENT_W, boxH, 3, 3, "F");
+        setFill(style.bar);
+        doc.rect(M_X, y - 2, 1.8, boxH, "F");
+        doc.setFont(theme.font, "bold");
+        doc.setFontSize(8.5);
+        setText(style.bar);
+        doc.text(block.label.toUpperCase(), M_X + 8, y + 5);
+        doc.setFont(theme.font, "normal");
+        doc.setFontSize(10.5);
+        setText(theme.ink);
+        doc.text(lines, M_X + 8, y + 11);
+        y += boxH + 6;
         continue;
       }
+
       if (block.type === "li") {
-        doc.setFont("helvetica", "normal");
+        doc.setFont(theme.font, "normal");
         doc.setFontSize(11);
-        doc.setTextColor(38, 42, 60);
-        const lines = doc.splitTextToSize(block.text, CONTENT_W - 8);
-        ensure(lines.length * 5.6);
-        doc.setFillColor(60, 90, 220);
-        doc.circle(M_X + 1.6, y - 1.4, 0.9, "F");
-        doc.text(lines, M_X + 6, y);
-        y += lines.length * 5.6 + 1.5;
+        setText(theme.ink);
+        const lines = doc.splitTextToSize(block.text, CONTENT_W - 10);
+        ensure(lines.length * 5.8);
+        setFill(theme.primary);
+        doc.circle(M_X + 1.8, y - 1.4, 0.9, "F");
+        doc.text(lines, M_X + 7, y);
+        y += lines.length * 5.8 + 2;
         continue;
       }
-      doc.setFont("helvetica", "normal");
+
+      // Paragraphe (avec lettrine éventuelle)
+      doc.setFont(theme.font, "normal");
       doc.setFontSize(11);
-      doc.setTextColor(38, 42, 60);
+      setText(theme.ink);
+
+      if (firstParagraph && block.text.length > 90) {
+        firstParagraph = false;
+        const initial = block.text.charAt(0);
+        const rest = block.text.slice(1);
+        ensure(24);
+        doc.setFont(theme.headingFont, "bold");
+        doc.setFontSize(30);
+        setText(theme.primary);
+        doc.text(initial, M_X, y + 8);
+        const capW = doc.getTextWidth(initial) + 3;
+        doc.setFont(theme.font, "normal");
+        doc.setFontSize(11);
+        setText(theme.ink);
+        const indented = doc.splitTextToSize(rest, CONTENT_W - capW);
+        const head = indented.slice(0, 3);
+        const tail = indented.slice(3);
+        head.forEach((line: string, i: number) => doc.text(line, M_X + capW, y + i * 5.9));
+        y += Math.max(head.length * 5.9, 14);
+        for (const line of tail) {
+          ensure(5.9);
+          doc.text(line, M_X, y);
+          y += 5.9;
+        }
+        y += 3.6;
+        continue;
+      }
+
+      firstParagraph = false;
       const lines = doc.splitTextToSize(block.text, CONTENT_W);
       for (const line of lines) {
-        ensure(5.8);
-        doc.text(line, M_X, y, { maxWidth: CONTENT_W });
-        y += 5.8;
+        ensure(5.9);
+        doc.text(line, M_X, y);
+        y += 5.9;
       }
-      y += 3.4;
+      y += 3.6;
+    }
+  };
+
+  const chapterSeparator = (index: number, chapterTitle: string, summary?: string) => {
+    newPage();
+    const label = `CHAPITRE ${String(index + 1).padStart(2, "0")}`;
+
+    if (theme.separator === "solid") {
+      setFill(theme.secondary);
+      doc.rect(0, 0, PAGE_W, PAGE_H, "F");
+      setFill(theme.primary);
+      doc.rect(M_X, 116, 26, 2.4, "F");
+      doc.setFont(theme.font, "bold");
+      doc.setFontSize(10);
+      setText(theme.accent);
+      doc.text(label, M_X, 108);
+      doc.setFont(theme.headingFont, "bold");
+      doc.setFontSize(26);
+      setText(white);
+      doc.text(doc.splitTextToSize(chapterTitle, CONTENT_W), M_X, 134);
+    } else if (theme.separator === "framed") {
+      setDraw(theme.primary);
+      doc.setLineWidth(0.6);
+      doc.rect(M_X - 6, 40, CONTENT_W + 12, PAGE_H - 80);
+      doc.setFont(theme.font, "bold");
+      doc.setFontSize(10);
+      setText(theme.primary);
+      doc.text(label, PAGE_W / 2, 120, { align: "center" });
+      doc.setFont(theme.headingFont, "bold");
+      doc.setFontSize(26);
+      setText(theme.ink);
+      doc.text(doc.splitTextToSize(chapterTitle, CONTENT_W - 20), PAGE_W / 2, 140, {
+        align: "center",
+      });
+    } else if (theme.separator === "minimal") {
+      doc.setFont(theme.font, "bold");
+      doc.setFontSize(9.5);
+      setText(theme.muted);
+      doc.text(label, M_X, 118);
+      doc.setFont(theme.headingFont, "bold");
+      doc.setFontSize(26);
+      setText(theme.ink);
+      doc.text(doc.splitTextToSize(chapterTitle, CONTENT_W), M_X, 134);
+      setDraw(theme.primary);
+      doc.setLineWidth(0.7);
+      doc.line(M_X, 146, M_X + 24, 146);
+    } else {
+      setFill(theme.surface);
+      doc.rect(0, 96, PAGE_W, 78, "F");
+      setFill(theme.primary);
+      doc.rect(0, 96, 3, 78, "F");
+      doc.setFont(theme.font, "bold");
+      doc.setFontSize(9.5);
+      setText(theme.primary);
+      doc.text(label, M_X, 118);
+      doc.setFont(theme.headingFont, "bold");
+      doc.setFontSize(26);
+      setText(theme.ink);
+      doc.text(doc.splitTextToSize(chapterTitle, CONTENT_W), M_X, 134);
+    }
+
+    if (summary) {
+      doc.setFont(theme.font, "italic");
+      doc.setFontSize(10.5);
+      setText(theme.separator === "solid" ? mix(white, theme.muted, 0.35) : theme.muted);
+      doc.text(
+        doc.splitTextToSize(summary, CONTENT_W - (theme.separator === "framed" ? 20 : 0)),
+        theme.separator === "framed" ? PAGE_W / 2 : M_X,
+        theme.separator === "framed" ? 156 : 152,
+        { align: theme.separator === "framed" ? "center" : "left" },
+      );
     }
   };
 
   // Introduction
   tocEntries.push({ label: "Introduction", page: doc.getNumberOfPages(), level: 0 });
-  writeHeading("Introduction", 20, 0);
-  writeBlocks(parseMarkdown(outline.introduction ?? ""));
+  writeHeading("Introduction", 22, 0);
+  writeBlocks(parseMarkdown(outline.introduction ?? ""), { dropCap: true });
 
   // Chapitres
   const chapters = outline.chapitres ?? [];
   for (let i = 0; i < chapters.length; i++) {
+    chapterSeparator(i, chapters[i].titre, chapters[i].resume);
     newPage();
     tocEntries.push({
       label: `Chapitre ${i + 1} — ${chapters[i].titre}`,
@@ -208,41 +463,87 @@ export async function exportPdf(ebook: PdfEbook) {
       level: 0,
     });
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(60, 90, 220);
-    doc.text(`CHAPITRE ${String(i + 1).padStart(2, "0")}`, M_X, y);
-    y += 4;
-    doc.setDrawColor(220, 226, 245);
-    doc.setLineWidth(0.4);
-    doc.line(M_X, y, M_X + CONTENT_W, y);
-    y += 8;
-
-    writeHeading(chapters[i].titre, 22, 0);
-
     const illustration = ebook.illustrationDataUrls?.[i];
     if (illustration) {
       const { w, h } = await imageSize(illustration);
-      const imgH = Math.min((CONTENT_W * h) / w, 85);
-      ensure(imgH + 6);
+      const imgH = Math.min((CONTENT_W * h) / w, 82);
+      ensure(imgH + 8);
       doc.addImage(illustration, "PNG", M_X, y, CONTENT_W, imgH, undefined, "FAST");
-      y += imgH + 8;
+      y += imgH + 9;
     }
 
-    writeBlocks(parseMarkdown(ebook.chapters?.[i] || chapters[i].resume || ""));
+    writeBlocks(parseMarkdown(ebook.chapters?.[i] || chapters[i].resume || ""), { dropCap: true });
+
+    if (chapters[i].points?.length) {
+      ensure(30);
+      const points = chapters[i].points!;
+      doc.setFont(theme.font, "bold");
+      doc.setFontSize(9);
+      setText(theme.primary);
+      y += 4;
+      doc.text("À RETENIR", M_X + 8, y + 4);
+      const lines = points.map((p) => `•  ${clean(p)}`);
+      doc.setFont(theme.font, "normal");
+      doc.setFontSize(10.5);
+      const wrapped = lines.flatMap((l) => doc.splitTextToSize(l, CONTENT_W - 18) as string[]);
+      const boxH = wrapped.length * 5.4 + 16;
+      setFill(soft);
+      doc.roundedRect(M_X, y - 2, CONTENT_W, boxH, 3, 3, "F");
+      setFill(theme.primary);
+      doc.rect(M_X, y - 2, 1.8, boxH, "F");
+      doc.setFont(theme.font, "bold");
+      doc.setFontSize(9);
+      setText(theme.primary);
+      doc.text("À RETENIR", M_X + 8, y + 4);
+      doc.setFont(theme.font, "normal");
+      doc.setFontSize(10.5);
+      setText(theme.ink);
+      doc.text(wrapped, M_X + 8, y + 11);
+      y += boxH + 6;
+    }
   }
 
   // Conclusion + CTA
   newPage();
   tocEntries.push({ label: "Conclusion", page: doc.getNumberOfPages(), level: 0 });
-  writeHeading("Conclusion", 20, 0);
-  writeBlocks(parseMarkdown(outline.conclusion ?? ""));
+  writeHeading("Conclusion", 22, 0);
+  writeBlocks(parseMarkdown(outline.conclusion ?? ""), { dropCap: true });
   if (outline.cta) {
     writeHeading("Et maintenant ?", 14, 6);
     writeBlocks(parseMarkdown(outline.cta));
   }
 
-  // --- Sommaire ---
+  // À propos de l'auteur
+  if (ebook.identity.authorBio || ebook.identity.website || ebook.identity.authorPhotoDataUrl) {
+    newPage();
+    tocEntries.push({ label: "À propos de l'auteur", page: doc.getNumberOfPages(), level: 0 });
+    writeHeading("À propos de l'auteur", 22, 0);
+    if (ebook.identity.authorPhotoDataUrl) {
+      doc.addImage(ebook.identity.authorPhotoDataUrl, "PNG", M_X, y, 34, 34, undefined, "FAST");
+      y += 40;
+    }
+    doc.setFont(theme.font, "bold");
+    doc.setFontSize(13);
+    setText(theme.ink);
+    doc.text(author, M_X, y);
+    y += 8;
+    if (ebook.identity.authorBio) writeBlocks(parseMarkdown(ebook.identity.authorBio));
+    if (ebook.identity.website) {
+      doc.setFont(theme.font, "normal");
+      doc.setFontSize(10.5);
+      setText(theme.primary);
+      doc.text(ebook.identity.website, M_X, y);
+      y += 6;
+    }
+    if (ebook.identity.socials) {
+      doc.setFont(theme.font, "normal");
+      doc.setFontSize(10);
+      setText(theme.muted);
+      doc.text(doc.splitTextToSize(ebook.identity.socials, CONTENT_W), M_X, y);
+    }
+  }
+
+  // ---------------------------------------------------------------- Sommaire
   doc.setPage(tocPageIndex);
   y = M_TOP;
   writeHeading("Sommaire", 24, 0);
@@ -252,46 +553,48 @@ export async function exportPdf(ebook: PdfEbook) {
       doc.setPage(tocPageIndex + 1);
       y = M_TOP;
     }
-    doc.setFont("helvetica", "normal");
+    doc.setFont(theme.font, "normal");
     doc.setFontSize(11);
-    doc.setTextColor(38, 42, 60);
+    setText(theme.ink);
     const label = doc.splitTextToSize(entry.label, CONTENT_W - 18)[0];
     doc.text(label, M_X, y);
     const labelW = doc.getTextWidth(label);
-    doc.setTextColor(170, 176, 195);
+    setText(mix(theme.muted, white, 0.45));
     const dots = ".".repeat(Math.max(0, Math.floor((CONTENT_W - labelW - 14) / 1.6)));
     doc.text(dots, M_X + labelW + 2, y);
-    doc.setTextColor(60, 90, 220);
-    doc.setFont("helvetica", "bold");
+    setText(theme.primary);
+    doc.setFont(theme.font, "bold");
     doc.text(String(entry.page), M_X + CONTENT_W, y, { align: "right" });
+    doc.link(M_X, y - 5, CONTENT_W, 7, { pageNumber: entry.page });
     y += 8.5;
   }
 
-  // --- En-têtes, pieds de page, filigrane ---
+  // ---------------------------------------------------------------- En-têtes / pieds
   const total = doc.getNumberOfPages();
-  const firstNumbered = ebook.coverDataUrl ? 2 : 1;
-  for (let page = firstNumbered; page <= total; page++) {
+  for (let page = 2; page <= total; page++) {
     doc.setPage(page);
     if (page >= bodyStart) {
-      doc.setFont("helvetica", "normal");
+      doc.setFont(theme.font, "normal");
       doc.setFontSize(8);
-      doc.setTextColor(160, 166, 185);
-      doc.text(title.slice(0, 70), M_X, 14);
-      doc.setDrawColor(232, 236, 248);
+      setText(mix(theme.muted, white, 0.25));
+      doc.text(title.slice(0, 70), M_X, 16);
+      doc.text(author.slice(0, 40), M_X + CONTENT_W, 16, { align: "right" });
+      setDraw(mix(theme.surface, white, 0.2));
       doc.setLineWidth(0.3);
-      doc.line(M_X, 17, M_X + CONTENT_W, 17);
-      doc.text("Solenya", M_X + CONTENT_W, 14, { align: "right" });
+      doc.line(M_X, 19, M_X + CONTENT_W, 19);
     }
-    doc.setFont("helvetica", "normal");
+    doc.setFont(theme.font, "normal");
     doc.setFontSize(9);
-    doc.setTextColor(150, 156, 178);
-    doc.text(String(page), PAGE_W / 2, PAGE_H - 12, { align: "center" });
+    setText(mix(theme.muted, white, 0.15));
+    doc.text(String(page), PAGE_W / 2, PAGE_H - 13, { align: "center" });
+  }
 
-    if (ebook.watermark && page >= bodyStart) {
-      doc.setFontSize(8);
-      doc.setTextColor(190, 196, 215);
-      doc.text("Généré avec Solenya", M_X, PAGE_H - 12);
-    }
+  if (ebook.watermark) {
+    doc.setPage(total);
+    doc.setFont(theme.font, "normal");
+    doc.setFontSize(7.5);
+    setText(mix(theme.muted, white, 0.4));
+    doc.text("Created with Solenya AI", PAGE_W / 2, PAGE_H - 8, { align: "center" });
   }
 
   doc.save(`${title.replace(/[^\p{L}\p{N} _-]/gu, "").trim() || "ebook"}.pdf`);
