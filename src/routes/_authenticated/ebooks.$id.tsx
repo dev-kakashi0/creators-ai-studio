@@ -57,6 +57,8 @@ type Ebook = Tables<"ebooks">;
 function EbookEditor() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+
   const runOutline = useServerFn(generateOutline);
   const runChapter = useServerFn(generateChapter);
   const runCover = useServerFn(generateCover);
