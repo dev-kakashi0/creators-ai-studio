@@ -477,11 +477,8 @@ export async function exportPdf(ebook: PdfEbook) {
     if (chapters[i].points?.length) {
       ensure(30);
       const points = chapters[i].points!;
-      doc.setFont(theme.font, "bold");
-      doc.setFontSize(9);
-      setText(theme.primary);
       y += 4;
-      doc.text("À RETENIR", M_X + 8, y + 4);
+
       const lines = points.map((p) => `•  ${clean(p)}`);
       doc.setFont(theme.font, "normal");
       doc.setFontSize(10.5);
