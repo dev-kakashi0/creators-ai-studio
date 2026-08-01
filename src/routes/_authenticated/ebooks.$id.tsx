@@ -33,6 +33,8 @@ import { CREDITS, LANGUAGES, STYLES } from "@/lib/ebook-config";
 import { FONT_CHOICES, QUALITIES, THEMES, type BrandingJson } from "@/lib/ebook-brand";
 import { brandingOf, identityOf, watermarkForPlan } from "@/lib/ebook-identity";
 import { useProfile } from "@/lib/auth";
+import type { Tables } from "@/integrations/supabase/types";
+
 
 import { cn } from "@/lib/utils";
 
