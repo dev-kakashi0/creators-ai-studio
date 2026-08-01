@@ -271,6 +271,61 @@ function NewEbookWizard() {
             )}
 
             {step === 5 && (
+              <StepBlock
+                index={6}
+                title="Identité & thème"
+                hint="Ces informations apparaissent sur la couverture, la page de copyright et les pieds de page."
+              >
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    value={authorName}
+                    onChange={(e) => setAuthorName(e.target.value)}
+                    maxLength={120}
+                    placeholder="Nom de l'auteur"
+                    className="h-12 w-full rounded-2xl border border-input bg-card px-4 text-base outline-none focus:border-primary focus:ring-4 focus:ring-ring/15"
+                  />
+                  <input
+                    value={publisher}
+                    onChange={(e) => setPublisher(e.target.value)}
+                    maxLength={120}
+                    placeholder="Éditeur / marque (optionnel)"
+                    className="h-12 w-full rounded-2xl border border-input bg-card px-4 text-base outline-none focus:border-primary focus:ring-4 focus:ring-ring/15"
+                  />
+                  <input
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    maxLength={200}
+                    placeholder="Site web (optionnel)"
+                    className="h-12 w-full rounded-2xl border border-input bg-card px-4 text-base outline-none focus:border-primary focus:ring-4 focus:ring-ring/15 sm:col-span-2"
+                  />
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {THEMES.map((t) => (
+                    <Choice
+                      key={t.id}
+                      active={theme === t.id}
+                      onClick={() => setTheme(t.id)}
+                      title={t.label}
+                      subtitle={t.hint}
+                    />
+                  ))}
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                  {QUALITIES.map((q) => (
+                    <Choice
+                      key={q.id}
+                      active={quality === q.id}
+                      onClick={() => setQuality(q.id)}
+                      title={q.label}
+                      subtitle={q.hint}
+                    />
+                  ))}
+                </div>
+              </StepBlock>
+            )}
+
+            {step === 6 && (
+
               <StepBlock index={6} title="Tout est prêt" hint="Vérifie le brief puis lance la génération.">
                 <dl className="grid gap-3 sm:grid-cols-2">
                   <Recap label="Sujet" value={topic} />
