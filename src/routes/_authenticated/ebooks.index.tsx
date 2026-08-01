@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { motion } from "motion/react";
-import { BookOpen, Copy, Loader2, Plus, Search, Star, Trash2 } from "lucide-react";
+import { BookOpen, Copy, Loader2, Plus, Search, Sparkles, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,15 +95,25 @@ function EbookLibrary() {
       title="Ebooks"
       subtitle="Ta bibliothèque d'ebooks générés par l'IA"
       actions={
-        <button
-          onClick={() => create.mutate()}
-          disabled={create.isPending}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 disabled:opacity-50"
-        >
-          {create.isPending ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
-          <span className="hidden sm:inline">Nouvel ebook</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => create.mutate()}
+            disabled={create.isPending}
+            className="inline-flex items-center gap-2 rounded-xl border border-input px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-accent disabled:opacity-50"
+          >
+            {create.isPending ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
+            <span className="hidden sm:inline">Ebook vide</span>
+          </button>
+          <Link
+            to="/ebooks/nouveau"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5"
+          >
+            <Sparkles size={15} />
+            <span className="hidden sm:inline">Générer avec l'IA</span>
+          </Link>
+        </div>
       }
+
     >
       <div className="mb-6 flex items-center gap-2 rounded-xl border border-input bg-card px-4 py-3 md:max-w-sm">
         <Search size={16} className="text-muted-foreground" />

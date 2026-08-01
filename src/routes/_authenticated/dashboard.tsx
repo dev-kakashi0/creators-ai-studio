@@ -82,11 +82,12 @@ function Dashboard() {
               <strong>{profile?.credits ?? 0} crédits IA</strong>.
             </p>
             <Link
-              to="/ebooks"
+              to="/ebooks/nouveau"
               className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-5 py-3 text-sm font-semibold text-primary transition-transform hover:-translate-y-0.5"
             >
-              <Sparkles size={15} /> Nouvel ebook
+              <Sparkles size={15} /> Générer un ebook
             </Link>
+
           </div>
         </section>
 
