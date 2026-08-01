@@ -30,7 +30,10 @@ import { exportDocx, type EbookOutline } from "@/lib/export-docx";
 import { exportPdf } from "@/lib/export-pdf";
 import { pathToDataUrl, signedUrl, uploadImage } from "@/lib/ebook-assets";
 import { CREDITS, LANGUAGES, STYLES } from "@/lib/ebook-config";
-import type { Tables } from "@/integrations/supabase/types";
+import { FONT_CHOICES, QUALITIES, THEMES, type BrandingJson } from "@/lib/ebook-brand";
+import { brandingOf, identityOf, watermarkForPlan } from "@/lib/ebook-identity";
+import { useProfile } from "@/lib/auth";
+
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/ebooks/$id")({
