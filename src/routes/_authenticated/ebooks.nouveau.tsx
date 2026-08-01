@@ -38,7 +38,7 @@ export const Route = createFileRoute("/_authenticated/ebooks/nouveau")({
   }),
 });
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 function NewEbookWizard() {
   const navigate = useNavigate();
@@ -52,6 +52,11 @@ function NewEbookWizard() {
   const [audience, setAudience] = useState<string>("");
   const [length, setLength] = useState<string>("standard");
   const [withIllustrations, setWithIllustrations] = useState(true);
+  const [authorName, setAuthorName] = useState("");
+  const [publisher, setPublisher] = useState("");
+  const [website, setWebsite] = useState("");
+  const [theme, setTheme] = useState<string>("modern");
+  const [quality, setQuality] = useState<string>("premium");
 
   const cost = useMemo(
     () => generationCost(length, withIllustrations, true),
@@ -60,7 +65,14 @@ function NewEbookWizard() {
   const credits = profile?.credits ?? 0;
   const canAfford = credits >= cost;
 
-  const canContinue = [topic.trim().length >= 3, true, true, audience.trim().length > 0, true][step];
+  const canContinue = [
+    topic.trim().length >= 3,
+    true,
+    true,
+    audience.trim().length > 0,
+    true,
+    true,
+  ][step];
 
   async function launch() {
     if (!canAfford) {
@@ -75,6 +87,11 @@ function NewEbookWizard() {
         audience: audience.trim(),
         length,
         withIllustrations,
+        authorName: authorName.trim() || (profile?.full_name ?? ""),
+        publisher: publisher.trim(),
+        website: website.trim(),
+        theme,
+        quality,
       });
       toast.success("Ton ebook est prêt !");
       navigate({ to: "/ebooks/$id", params: { id } });
@@ -82,6 +99,7 @@ function NewEbookWizard() {
       toast.error(error instanceof Error ? error.message : "La génération a échoué.");
     }
   }
+
 
   if (running || steps.some((s) => s.state !== "pending")) {
     return (
