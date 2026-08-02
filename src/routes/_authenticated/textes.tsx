@@ -68,8 +68,37 @@ function CopyStudio() {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast.success("Texte généré");
     },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Génération impossible"),
+    onError: (error) => {
+      if (handleCreditError(error, copyCost)) return;
+      toast.error(error instanceof Error ? error.message : "Génération impossible");
+    },
+  });
+
+  const pack = useMutation({
+    mutationFn: async () => {
+      if (product.trim().length < 3) throw new Error("Indique le produit à promouvoir.");
+      const result = await runPack({
+        data: { product: product.trim(), details, audience, language, style },
+      });
+      return [
+        "# Page de vente",
+        result.salesPage,
+        "\n\n# Posts sociaux",
+        result.socialPosts,
+        "\n\n# Séquence email",
+        result.emailSequence,
+      ].join("\n\n");
+    },
+    onSuccess: (content) => {
+      setResult(content);
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["credit-history"] });
+      toast.success("Pack marketing généré");
+    },
+    onError: (error) => {
+      if (handleCreditError(error, packCost)) return;
+      toast.error(error instanceof Error ? error.message : "Génération impossible");
+    },
   });
 
   const save = useMutation({
