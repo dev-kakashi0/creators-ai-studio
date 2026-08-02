@@ -47,6 +47,36 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_costs: {
+        Row: {
+          created_at: string
+          credits: number
+          description: string | null
+          key: string
+          label: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits?: number
+          description?: string | null
+          key: string
+          label: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          description?: string | null
+          key?: string
+          label?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       credit_packs: {
         Row: {
           created_at: string
@@ -80,22 +110,28 @@ export type Database = {
       credit_transactions: {
         Row: {
           amount: number
+          balance_after: number | null
           created_at: string
           id: string
+          kind: string
           reason: string
           user_id: string
         }
         Insert: {
           amount: number
+          balance_after?: number | null
           created_at?: string
           id?: string
+          kind?: string
           reason: string
           user_id: string
         }
         Update: {
           amount?: number
+          balance_after?: number | null
           created_at?: string
           id?: string
+          kind?: string
           reason?: string
           user_id?: string
         }
@@ -337,6 +373,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       videos: {
         Row: {
           avatar: string | null
@@ -381,6 +438,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_credits_for: {
+        Args: {
+          _amount: number
+          _kind: string
+          _reason: string
+          _user_id: string
+        }
+        Returns: number
+      }
       consume_credits: {
         Args: { _amount: number; _reason: string }
         Returns: number
@@ -389,9 +455,16 @@ export type Database = {
         Args: { _amount: number; _reason: string; _user_id: string }
         Returns: number
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -518,6 +591,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
