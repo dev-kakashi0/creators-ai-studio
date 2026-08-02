@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { CREDITS } from "@/lib/ebook-config";
 
 async function generateImage(prompt: string) {
   const key = process.env.LOVABLE_API_KEY;
@@ -42,6 +41,7 @@ const CoverInput = z.object({
   subtitle: z.string().trim().max(300).optional().default(""),
   topic: z.string().trim().max(300).optional().default(""),
   style: z.string().trim().max(120).optional().default("moderne, minimaliste, bleu et blanc"),
+  jobId: z.string().uuid().optional(),
 });
 
 /** Génère une couverture d'ebook et renvoie une image encodée en base64. */
@@ -49,8 +49,12 @@ export const generateCover = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => CoverInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { consumeCredits } = await import("@/lib/credits.server");
-    await consumeCredits(context.userId, CREDITS.cover, "ebook_cover");
+    const { billAction } = await import("@/lib/credits.server");
+    await billAction(context.userId, "cover", {
+      jobId: data.jobId,
+      unit: "cover",
+      reason: "ebook_cover",
+    });
 
     const dataUrl = await generateImage(
       `Couverture de livre numérique premium, format portrait 2:3, qualité haute définition.
@@ -68,6 +72,7 @@ const IllustrationInput = z.object({
   bookTitle: z.string().trim().min(1).max(300),
   chapterTitle: z.string().trim().min(1).max(300),
   summary: z.string().trim().max(600).optional().default(""),
+  jobId: z.string().uuid().optional(),
 });
 
 /** Génère une illustration d'ouverture de chapitre. */
@@ -75,8 +80,12 @@ export const generateIllustration = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => IllustrationInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { consumeCredits } = await import("@/lib/credits.server");
-    await consumeCredits(context.userId, CREDITS.illustration, "ebook_illustration");
+    const { billAction } = await import("@/lib/credits.server");
+    await billAction(context.userId, "illustration", {
+      jobId: data.jobId,
+      unit: "illustration",
+      reason: "ebook_illustration",
+    });
 
     const dataUrl = await generateImage(
       `Illustration éditoriale pour un chapitre de livre professionnel, format paysage 16:9.

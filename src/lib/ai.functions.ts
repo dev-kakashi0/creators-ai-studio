@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { CREDITS, languageLabel, lengthConfig, styleLabel } from "@/lib/ebook-config";
+import { languageLabel, lengthConfig, styleLabel } from "@/lib/ebook-config";
 
 const MODEL = "google/gemini-3.6-flash";
 
@@ -53,6 +53,7 @@ const Common = {
 const OutlineInput = z.object({
   topic: z.string().trim().min(3).max(300),
   length: z.string().trim().max(20).optional().default("standard"),
+  jobId: z.string().uuid().optional(),
   ...Common,
 });
 
@@ -69,8 +70,12 @@ export const generateOutline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => OutlineInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { consumeCredits } = await import("@/lib/credits.server");
-    await consumeCredits(context.userId, CREDITS.outline, "ebook_outline");
+    const { billAction } = await import("@/lib/credits.server");
+    await billAction(context.userId, "outline", {
+      jobId: data.jobId,
+      unit: "outline",
+      reason: "ebook_outline",
+    });
 
     const cfg = lengthConfig(data.length);
 
@@ -109,6 +114,7 @@ const ChapterInput = z.object({
   summary: z.string().trim().max(2000).optional().default(""),
   points: z.array(z.string().trim().max(300)).max(10).optional().default([]),
   length: z.string().trim().max(20).optional().default("standard"),
+  jobId: z.string().uuid().optional(),
   ...Common,
 });
 
@@ -116,8 +122,12 @@ export const generateChapter = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ChapterInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { consumeCredits } = await import("@/lib/credits.server");
-    await consumeCredits(context.userId, CREDITS.chapter, "ebook_chapter");
+    const { billAction } = await import("@/lib/credits.server");
+    await billAction(context.userId, "chapter", {
+      jobId: data.jobId,
+      unit: "chapter",
+      reason: "ebook_chapter",
+    });
 
     const cfg = lengthConfig(data.length);
 
@@ -209,8 +219,8 @@ export const generateMarketingCopy = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => CopyInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { consumeCredits } = await import("@/lib/credits.server");
-    await consumeCredits(context.userId, CREDITS.copy, `copy_${data.kind}`);
+    const { billAction } = await import("@/lib/credits.server");
+    await billAction(context.userId, "copy", { reason: `copy_${data.kind}` });
 
     const content = await callGateway([
       {
