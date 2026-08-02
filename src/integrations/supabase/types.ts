@@ -265,6 +265,54 @@ export type Database = {
         }
         Relationships: []
       }
+      generation_jobs: {
+        Row: {
+          chapters_allowed: number
+          chapters_used: number
+          covers_allowed: number
+          covers_used: number
+          created_at: string
+          expires_at: string
+          id: string
+          illustrations_allowed: number
+          illustrations_used: number
+          kind: string
+          outline_allowed: number
+          outline_used: number
+          user_id: string
+        }
+        Insert: {
+          chapters_allowed?: number
+          chapters_used?: number
+          covers_allowed?: number
+          covers_used?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          illustrations_allowed?: number
+          illustrations_used?: number
+          kind: string
+          outline_allowed?: number
+          outline_used?: number
+          user_id: string
+        }
+        Update: {
+          chapters_allowed?: number
+          chapters_used?: number
+          covers_allowed?: number
+          covers_used?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          illustrations_allowed?: number
+          illustrations_used?: number
+          kind?: string
+          outline_allowed?: number
+          outline_used?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       images: {
         Row: {
           created_at: string
