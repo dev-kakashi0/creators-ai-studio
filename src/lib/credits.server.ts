@@ -33,13 +33,6 @@ export async function consumeCredits(userId: string, key: CreditActionKey, reaso
 
 type JobUnit = "outline" | "chapter" | "illustration" | "cover";
 
-const UNIT_COLUMNS: Record<JobUnit, { allowed: string; used: string }> = {
-  outline: { allowed: "outline_allowed", used: "outline_used" },
-  chapter: { allowed: "chapters_allowed", used: "chapters_used" },
-  illustration: { allowed: "illustrations_allowed", used: "illustrations_used" },
-  cover: { allowed: "covers_allowed", used: "covers_used" },
-};
-
 /**
  * Consomme une unité d'un forfait de génération complète.
  * Retourne true si l'unité était couverte par le forfait (aucun crédit débité).
@@ -55,14 +48,29 @@ async function useJobUnit(userId: string, jobId: string, unit: JobUnit) {
   if (!job) return false;
   if (new Date(job.expires_at).getTime() < Date.now()) return false;
 
-  const cols = UNIT_COLUMNS[unit];
-  const allowed = (job as Record<string, number>)[cols.allowed] ?? 0;
-  const used = (job as Record<string, number>)[cols.used] ?? 0;
+  const counters: Record<JobUnit, { allowed: number; used: number }> = {
+    outline: { allowed: job.outline_allowed, used: job.outline_used },
+    chapter: { allowed: job.chapters_allowed, used: job.chapters_used },
+    illustration: { allowed: job.illustrations_allowed, used: job.illustrations_used },
+    cover: { allowed: job.covers_allowed, used: job.covers_used },
+  };
+
+  const { allowed, used } = counters[unit];
   if (used >= allowed) return false;
+
+  const next = used + 1;
+  const patch =
+    unit === "outline"
+      ? { outline_used: next }
+      : unit === "chapter"
+        ? { chapters_used: next }
+        : unit === "illustration"
+          ? { illustrations_used: next }
+          : { covers_used: next };
 
   const { error } = await supabaseAdmin
     .from("generation_jobs")
-    .update({ [cols.used]: used + 1 })
+    .update(patch)
     .eq("id", jobId)
     .eq("user_id", userId);
 
