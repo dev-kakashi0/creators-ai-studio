@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oublie'
 import { Route as ReinitialiserMotDePasseRouteImport } from './routes/reinitialiser-mot-de-passe'
 import { Route as AuthenticatedBibliothequeRouteImport } from './routes/_authenticated/bibliotheque'
+import { Route as AuthenticatedCreditsRouteImport } from './routes/_authenticated/credits'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
 import { Route as AuthenticatedTarifsRouteImport } from './routes/_authenticated/tarifs'
@@ -56,6 +57,11 @@ const AuthenticatedBibliothequeRoute =
     path: '/bibliotheque',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCreditsRoute = AuthenticatedCreditsRouteImport.update({
+  id: '/credits',
+  path: '/credits',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/bibliotheque': typeof AuthenticatedBibliothequeRoute
+  '/credits': typeof AuthenticatedCreditsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/parametres': typeof AuthenticatedParametresRoute
   '/tarifs': typeof AuthenticatedTarifsRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/bibliotheque': typeof AuthenticatedBibliothequeRoute
+  '/credits': typeof AuthenticatedCreditsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/parametres': typeof AuthenticatedParametresRoute
   '/tarifs': typeof AuthenticatedTarifsRoute
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/_authenticated/bibliotheque': typeof AuthenticatedBibliothequeRoute
+  '/_authenticated/credits': typeof AuthenticatedCreditsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/tarifs': typeof AuthenticatedTarifsRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
     | '/bibliotheque'
+    | '/credits'
     | '/dashboard'
     | '/parametres'
     | '/tarifs'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
     | '/bibliotheque'
+    | '/credits'
     | '/dashboard'
     | '/parametres'
     | '/tarifs'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
     | '/_authenticated/bibliotheque'
+    | '/_authenticated/credits'
     | '/_authenticated/dashboard'
     | '/_authenticated/parametres'
     | '/_authenticated/tarifs'
@@ -267,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/bibliotheque'
       fullPath: '/bibliotheque'
       preLoaderRoute: typeof AuthenticatedBibliothequeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/credits': {
+      id: '/_authenticated/credits'
+      path: '/credits'
+      fullPath: '/credits'
+      preLoaderRoute: typeof AuthenticatedCreditsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -344,6 +363,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBibliothequeRoute: typeof AuthenticatedBibliothequeRoute
+  AuthenticatedCreditsRoute: typeof AuthenticatedCreditsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
   AuthenticatedTarifsRoute: typeof AuthenticatedTarifsRoute
@@ -358,6 +378,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBibliothequeRoute: AuthenticatedBibliothequeRoute,
+  AuthenticatedCreditsRoute: AuthenticatedCreditsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
   AuthenticatedTarifsRoute: AuthenticatedTarifsRoute,
