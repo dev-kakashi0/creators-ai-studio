@@ -23,6 +23,7 @@ import { Route as AuthenticatedTextesRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedVeilleRouteImport } from './routes/_authenticated/veille'
 import { Route as AuthenticatedVideoRouteImport } from './routes/_authenticated/video'
 import { Route as AuthenticatedVisuelsRouteImport } from './routes/_authenticated/visuels'
+import { Route as AuthenticatedAdminCreditsRouteImport } from './routes/_authenticated/admin.credits'
 import { Route as AuthenticatedEbooksIndexRouteImport } from './routes/_authenticated/ebooks.index'
 import { Route as AuthenticatedEbooksIdRouteImport } from './routes/_authenticated/ebooks.$id'
 import { Route as AuthenticatedEbooksNouveauRouteImport } from './routes/_authenticated/ebooks.nouveau'
@@ -97,6 +98,12 @@ const AuthenticatedVisuelsRoute = AuthenticatedVisuelsRouteImport.update({
   path: '/visuels',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminCreditsRoute =
+  AuthenticatedAdminCreditsRouteImport.update({
+    id: '/admin/credits',
+    path: '/admin/credits',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEbooksIndexRoute =
   AuthenticatedEbooksIndexRouteImport.update({
     id: '/ebooks/',
@@ -129,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/veille': typeof AuthenticatedVeilleRoute
   '/video': typeof AuthenticatedVideoRoute
   '/visuels': typeof AuthenticatedVisuelsRoute
+  '/admin/credits': typeof AuthenticatedAdminCreditsRoute
   '/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/ebooks/nouveau': typeof AuthenticatedEbooksNouveauRoute
   '/ebooks/': typeof AuthenticatedEbooksIndexRoute
@@ -147,6 +155,7 @@ export interface FileRoutesByTo {
   '/veille': typeof AuthenticatedVeilleRoute
   '/video': typeof AuthenticatedVideoRoute
   '/visuels': typeof AuthenticatedVisuelsRoute
+  '/admin/credits': typeof AuthenticatedAdminCreditsRoute
   '/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/ebooks/nouveau': typeof AuthenticatedEbooksNouveauRoute
   '/ebooks': typeof AuthenticatedEbooksIndexRoute
@@ -167,6 +176,7 @@ export interface FileRoutesById {
   '/_authenticated/veille': typeof AuthenticatedVeilleRoute
   '/_authenticated/video': typeof AuthenticatedVideoRoute
   '/_authenticated/visuels': typeof AuthenticatedVisuelsRoute
+  '/_authenticated/admin/credits': typeof AuthenticatedAdminCreditsRoute
   '/_authenticated/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/_authenticated/ebooks/nouveau': typeof AuthenticatedEbooksNouveauRoute
   '/_authenticated/ebooks/': typeof AuthenticatedEbooksIndexRoute
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/veille'
     | '/video'
     | '/visuels'
+    | '/admin/credits'
     | '/ebooks/$id'
     | '/ebooks/nouveau'
     | '/ebooks/'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/veille'
     | '/video'
     | '/visuels'
+    | '/admin/credits'
     | '/ebooks/$id'
     | '/ebooks/nouveau'
     | '/ebooks'
@@ -224,6 +236,7 @@ export interface FileRouteTypes {
     | '/_authenticated/veille'
     | '/_authenticated/video'
     | '/_authenticated/visuels'
+    | '/_authenticated/admin/credits'
     | '/_authenticated/ebooks/$id'
     | '/_authenticated/ebooks/nouveau'
     | '/_authenticated/ebooks/'
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVisuelsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/credits': {
+      id: '/_authenticated/admin/credits'
+      path: '/admin/credits'
+      fullPath: '/admin/credits'
+      preLoaderRoute: typeof AuthenticatedAdminCreditsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ebooks/': {
       id: '/_authenticated/ebooks/'
       path: '/ebooks'
@@ -371,6 +391,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedVeilleRoute: typeof AuthenticatedVeilleRoute
   AuthenticatedVideoRoute: typeof AuthenticatedVideoRoute
   AuthenticatedVisuelsRoute: typeof AuthenticatedVisuelsRoute
+  AuthenticatedAdminCreditsRoute: typeof AuthenticatedAdminCreditsRoute
   AuthenticatedEbooksIdRoute: typeof AuthenticatedEbooksIdRoute
   AuthenticatedEbooksNouveauRoute: typeof AuthenticatedEbooksNouveauRoute
   AuthenticatedEbooksIndexRoute: typeof AuthenticatedEbooksIndexRoute
@@ -386,6 +407,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedVeilleRoute: AuthenticatedVeilleRoute,
   AuthenticatedVideoRoute: AuthenticatedVideoRoute,
   AuthenticatedVisuelsRoute: AuthenticatedVisuelsRoute,
+  AuthenticatedAdminCreditsRoute: AuthenticatedAdminCreditsRoute,
   AuthenticatedEbooksIdRoute: AuthenticatedEbooksIdRoute,
   AuthenticatedEbooksNouveauRoute: AuthenticatedEbooksNouveauRoute,
   AuthenticatedEbooksIndexRoute: AuthenticatedEbooksIndexRoute,
