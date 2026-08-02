@@ -8,7 +8,9 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { COPY_KINDS, generateMarketingCopy, type CopyKind } from "@/lib/ai.functions";
-import { CREDITS, LANGUAGES, STYLES } from "@/lib/ebook-config";
+import { LANGUAGES, STYLES } from "@/lib/ebook-config";
+import { generateMarketingPack } from "@/lib/credits.functions";
+import { handleCreditError, useCreditCost } from "@/lib/credits";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/textes")({
@@ -28,6 +30,9 @@ export const Route = createFileRoute("/_authenticated/textes")({
 function CopyStudio() {
   const queryClient = useQueryClient();
   const runCopy = useServerFn(generateMarketingCopy);
+  const runPack = useServerFn(generateMarketingPack);
+  const copyCost = useCreditCost("copy");
+  const packCost = useCreditCost("marketing_pack");
 
   const [kind, setKind] = useState<CopyKind>("sales_page");
   const [product, setProduct] = useState("");
@@ -198,8 +203,24 @@ function CopyStudio() {
               ) : (
                 <Wand2 size={16} />
               )}
-              Générer ({CREDITS.copy} crédit)
+              Générer ({copyCost} crédit{copyCost > 1 ? "s" : ""})
             </button>
+
+            <button
+              onClick={() => pack.mutate()}
+              disabled={pack.isPending}
+              className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-input text-sm font-semibold transition-colors hover:bg-accent disabled:opacity-50"
+            >
+              {pack.isPending ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Sparkles size={16} />
+              )}
+              Pack marketing IA ({packCost} crédits)
+            </button>
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Page de vente + posts sociaux + séquence email en une seule génération.
+            </p>
           </div>
         </aside>
 
