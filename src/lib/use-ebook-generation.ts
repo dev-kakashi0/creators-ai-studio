@@ -5,6 +5,7 @@ import { generateChapter, generateOutline, type GeneratedOutline } from "@/lib/a
 import { generateCover, generateIllustration } from "@/lib/cover.functions";
 import { uploadImage } from "@/lib/ebook-assets";
 import { lengthConfig } from "@/lib/ebook-config";
+import { startEbookJob } from "@/lib/credits.functions";
 
 export type StepState = "pending" | "running" | "done" | "error";
 
@@ -60,6 +61,7 @@ export function useEbookGeneration() {
   const runChapter = useServerFn(generateChapter);
   const runCover = useServerFn(generateCover);
   const runIllustration = useServerFn(generateIllustration);
+  const runStartJob = useServerFn(startEbookJob);
 
   const [steps, setSteps] = useState<GenerationStep[]>(
     STEPS.map((s) => ({ ...s, state: "pending" as StepState })),
@@ -89,6 +91,16 @@ export function useEbookGeneration() {
 
         const cfg = lengthConfig(brief.length);
 
+        // 0 — forfait de génération complète (débit unique)
+        const { jobId } = await runStartJob({
+          data: {
+            length: brief.length,
+            chapters: cfg.chapters,
+            withIllustrations: brief.withIllustrations,
+            withCover: true,
+          },
+        });
+
         // 1 & 2 — plan
         update("research", { state: "running" });
         const outline = (await runOutline({
@@ -98,6 +110,7 @@ export function useEbookGeneration() {
             style: brief.style,
             language: brief.language,
             length: brief.length,
+            jobId,
           },
         })) as GeneratedOutline;
         update("research", { state: "done" });
@@ -149,6 +162,7 @@ export function useEbookGeneration() {
               style: brief.style,
               language: brief.language,
               length: brief.length,
+              jobId,
             },
           });
           done += 1;
@@ -177,6 +191,7 @@ export function useEbookGeneration() {
                   bookTitle: outline.titre,
                   chapterTitle: chapter.titre,
                   summary: chapter.resume ?? "",
+                  jobId,
                 },
               });
               const path = await uploadImage(`${userId}/${ebookId}/ch-${index}.png`, dataUrl);
@@ -206,6 +221,7 @@ export function useEbookGeneration() {
               title: outline.titre,
               subtitle: outline.sous_titre ?? "",
               topic: brief.topic,
+              jobId,
             },
           });
           const path = await uploadImage(`${userId}/${ebookId}/cover.png`, dataUrl);
@@ -230,7 +246,7 @@ export function useEbookGeneration() {
         setRunning(false);
       }
     },
-    [reset, runChapter, runCover, runIllustration, runOutline, update],
+    [reset, runChapter, runCover, runIllustration, runOutline, runStartJob, update],
   );
 
   return { steps, running, generate, reset };

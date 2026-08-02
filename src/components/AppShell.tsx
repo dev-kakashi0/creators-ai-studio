@@ -12,12 +12,17 @@ import {
   PenLine,
   Settings,
   CreditCard,
+  History,
+  ShieldCheck,
+  AlertTriangle,
   Sparkles,
   Video,
   X,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useProfile, useSignOut } from "@/lib/auth";
+import { useIsAdmin } from "@/lib/credits";
+import { CRITICAL_CREDITS, LOW_CREDITS } from "@/lib/credit-costs";
 import { Logomark } from "@/components/Logomark";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +35,7 @@ const NAV_ITEMS = [
   { to: "/veille", label: "Niches & Veille", Icon: Compass },
   { to: "/bibliotheque", label: "Bibliothèque", Icon: Library },
   { to: "/tarifs", label: "Tarifs & crédits", Icon: CreditCard },
+  { to: "/credits", label: "Historique crédits", Icon: History },
 ] as const;
 
 export function AppShell({
@@ -46,6 +52,10 @@ export function AppShell({
   const [open, setOpen] = useState(false);
   const { data: profile } = useProfile();
   const signOut = useSignOut();
+  const { data: isAdmin } = useIsAdmin();
+  const credits = profile?.credits ?? 0;
+  const low = credits < LOW_CREDITS;
+  const critical = credits < CRITICAL_CREDITS;
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   const initials = (profile?.full_name || profile?.email || "S").slice(0, 1).toUpperCase();
@@ -112,6 +122,15 @@ export function AppShell({
         </nav>
 
         <div className="border-t border-sidebar-border p-3">
+          {isAdmin && (
+            <Link
+              to="/admin/credits"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+            >
+              <ShieldCheck size={18} /> Admin · crédits
+            </Link>
+          )}
           <Link
             to="/parametres"
             onClick={() => setOpen(false)}
@@ -146,11 +165,29 @@ export function AppShell({
           <div className="flex items-center gap-2 md:gap-3">
             {actions}
             <Link
-              to="/tarifs"
-              className="hidden items-center gap-1.5 rounded-full bg-primary-soft px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 sm:flex"
+              to="/credits"
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors",
+                critical
+                  ? "bg-destructive/10 text-destructive hover:bg-destructive/15"
+                  : low
+                    ? "bg-warning-soft text-warning hover:bg-warning/15"
+                    : "bg-primary-soft text-primary hover:bg-primary/15",
+              )}
+              title="Voir l'historique de crédits"
             >
               <Sparkles size={14} />
-              {profile?.credits ?? 0} crédits
+              <span className="whitespace-nowrap">
+                {credits} crédit{credits > 1 ? "s" : ""}
+                <span className="hidden md:inline"> restants</span>
+              </span>
+            </Link>
+            <Link
+              to="/tarifs"
+              hash="packs"
+              className="hidden h-10 items-center gap-1.5 rounded-full bg-gradient-primary px-4 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 sm:flex"
+            >
+              <CreditCard size={15} /> Acheter des crédits
             </Link>
             <button
               className="hidden size-10 items-center justify-center rounded-xl border border-border text-muted-foreground transition-colors hover:text-primary sm:flex"
@@ -166,6 +203,30 @@ export function AppShell({
             </Link>
           </div>
         </header>
+
+        {low && (
+          <div
+            className={cn(
+              "flex flex-wrap items-center gap-2 border-b px-4 py-3 text-sm md:px-8",
+              critical
+                ? "border-destructive/20 bg-destructive/10 text-destructive"
+                : "border-warning/20 bg-warning-soft text-warning",
+            )}
+          >
+            <AlertTriangle size={16} />
+            <span className="font-medium">
+              {critical
+                ? `Il ne te reste que ${credits} crédit${credits > 1 ? "s" : ""}. Passe à un plan supérieur pour continuer à générer.`
+                : `Crédits bientôt épuisés : ${credits} restants.`}
+            </span>
+            <Link
+              to="/tarifs"
+              className="ml-auto rounded-full bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-soft"
+            >
+              {critical ? "Améliorer mon plan" : "Recharger"}
+            </Link>
+          </div>
+        )}
 
         <motion.main
           initial={{ opacity: 0, y: 8 }}

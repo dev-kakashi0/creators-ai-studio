@@ -94,6 +94,11 @@ function PricingPage() {
               <div className="mt-1 text-sm font-semibold text-primary">
                 {plan.monthly_credits} crédits par mois
               </div>
+              {plan.id !== "free" && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Les crédits non utilisés expirent à la fin du cycle de facturation.
+                </p>
+              )}
 
               <ul className="mt-5 flex-1 space-y-2.5">
                 {features.map((feature) => (
@@ -133,11 +138,11 @@ function PricingPage() {
         })}
       </div>
 
-      <h2 className="mt-12 font-display text-xl font-bold">Packs de crédits</h2>
+      <h2 id="packs" className="mt-12 scroll-mt-24 font-display text-xl font-bold">Packs de crédits</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Besoin de plus de crédits sans changer d'abonnement ? Recharge à la demande.
+        Besoin de plus de crédits sans changer d'abonnement ? Recharge à la demande : les crédits achetés n'expirent jamais tant que l'abonnement est actif.
       </p>
-      <div className="mt-5 grid gap-5 sm:grid-cols-3">
+      <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {(packs ?? []).map((pack) => (
           <div key={pack.id} className="card-premium card-hover flex flex-col p-6">
             <span className="flex size-10 items-center justify-center rounded-xl bg-primary-soft text-primary">

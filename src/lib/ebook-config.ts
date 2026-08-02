@@ -1,3 +1,5 @@
+import { DEFAULT_CREDIT_COSTS } from "@/lib/credit-costs";
+
 /** Configuration partagée du studio ebook : styles, longueurs, langues, coûts. */
 
 export const LANGUAGES = [
@@ -35,13 +37,7 @@ export const AUDIENCES = [
 
 export type LengthId = (typeof LENGTHS)[number]["id"];
 
-export const CREDITS = {
-  outline: 1,
-  chapter: 1,
-  illustration: 1,
-  cover: 2,
-  copy: 1,
-} as const;
+export { DEFAULT_CREDIT_COSTS as CREDITS } from "@/lib/credit-costs";
 
 export function lengthConfig(id: string) {
   return LENGTHS.find((l) => l.id === id) ?? LENGTHS[1];
@@ -55,13 +51,13 @@ export function languageLabel(id: string) {
   return LANGUAGES.find((l) => l.id === id)?.label ?? "Français";
 }
 
-/** Coût total estimé d'une génération complète. */
-export function generationCost(lengthId: string, withIllustrations: boolean, withCover: boolean) {
-  const { chapters } = lengthConfig(lengthId);
-  return (
-    CREDITS.outline +
-    chapters * CREDITS.chapter +
-    (withIllustrations ? chapters * CREDITS.illustration : 0) +
-    (withCover ? CREDITS.cover : 0)
-  );
+/**
+ * Coût forfaitaire d'une génération complète : 10 crédits (20-50 pages)
+ * ou 20 crédits (100+ pages). Illustrations et couverture incluses.
+ */
+export function generationCost(
+  lengthId: string,
+  costs: { ebook_standard: number; ebook_premium: number } = DEFAULT_CREDIT_COSTS,
+) {
+  return lengthId === "premium" ? costs.ebook_premium : costs.ebook_standard;
 }

@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oublie'
 import { Route as ReinitialiserMotDePasseRouteImport } from './routes/reinitialiser-mot-de-passe'
 import { Route as AuthenticatedBibliothequeRouteImport } from './routes/_authenticated/bibliotheque'
+import { Route as AuthenticatedCreditsRouteImport } from './routes/_authenticated/credits'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
 import { Route as AuthenticatedTarifsRouteImport } from './routes/_authenticated/tarifs'
@@ -22,6 +23,7 @@ import { Route as AuthenticatedTextesRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedVeilleRouteImport } from './routes/_authenticated/veille'
 import { Route as AuthenticatedVideoRouteImport } from './routes/_authenticated/video'
 import { Route as AuthenticatedVisuelsRouteImport } from './routes/_authenticated/visuels'
+import { Route as AuthenticatedAdminCreditsRouteImport } from './routes/_authenticated/admin.credits'
 import { Route as AuthenticatedEbooksIndexRouteImport } from './routes/_authenticated/ebooks.index'
 import { Route as AuthenticatedEbooksIdRouteImport } from './routes/_authenticated/ebooks.$id'
 import { Route as AuthenticatedEbooksNouveauRouteImport } from './routes/_authenticated/ebooks.nouveau'
@@ -56,6 +58,11 @@ const AuthenticatedBibliothequeRoute =
     path: '/bibliotheque',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCreditsRoute = AuthenticatedCreditsRouteImport.update({
+  id: '/credits',
+  path: '/credits',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -91,6 +98,12 @@ const AuthenticatedVisuelsRoute = AuthenticatedVisuelsRouteImport.update({
   path: '/visuels',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminCreditsRoute =
+  AuthenticatedAdminCreditsRouteImport.update({
+    id: '/admin/credits',
+    path: '/admin/credits',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEbooksIndexRoute =
   AuthenticatedEbooksIndexRouteImport.update({
     id: '/ebooks/',
@@ -115,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/bibliotheque': typeof AuthenticatedBibliothequeRoute
+  '/credits': typeof AuthenticatedCreditsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/parametres': typeof AuthenticatedParametresRoute
   '/tarifs': typeof AuthenticatedTarifsRoute
@@ -122,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/veille': typeof AuthenticatedVeilleRoute
   '/video': typeof AuthenticatedVideoRoute
   '/visuels': typeof AuthenticatedVisuelsRoute
+  '/admin/credits': typeof AuthenticatedAdminCreditsRoute
   '/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/ebooks/nouveau': typeof AuthenticatedEbooksNouveauRoute
   '/ebooks/': typeof AuthenticatedEbooksIndexRoute
@@ -132,6 +147,7 @@ export interface FileRoutesByTo {
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/bibliotheque': typeof AuthenticatedBibliothequeRoute
+  '/credits': typeof AuthenticatedCreditsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/parametres': typeof AuthenticatedParametresRoute
   '/tarifs': typeof AuthenticatedTarifsRoute
@@ -139,6 +155,7 @@ export interface FileRoutesByTo {
   '/veille': typeof AuthenticatedVeilleRoute
   '/video': typeof AuthenticatedVideoRoute
   '/visuels': typeof AuthenticatedVisuelsRoute
+  '/admin/credits': typeof AuthenticatedAdminCreditsRoute
   '/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/ebooks/nouveau': typeof AuthenticatedEbooksNouveauRoute
   '/ebooks': typeof AuthenticatedEbooksIndexRoute
@@ -151,6 +168,7 @@ export interface FileRoutesById {
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/reinitialiser-mot-de-passe': typeof ReinitialiserMotDePasseRoute
   '/_authenticated/bibliotheque': typeof AuthenticatedBibliothequeRoute
+  '/_authenticated/credits': typeof AuthenticatedCreditsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/tarifs': typeof AuthenticatedTarifsRoute
@@ -158,6 +176,7 @@ export interface FileRoutesById {
   '/_authenticated/veille': typeof AuthenticatedVeilleRoute
   '/_authenticated/video': typeof AuthenticatedVideoRoute
   '/_authenticated/visuels': typeof AuthenticatedVisuelsRoute
+  '/_authenticated/admin/credits': typeof AuthenticatedAdminCreditsRoute
   '/_authenticated/ebooks/$id': typeof AuthenticatedEbooksIdRoute
   '/_authenticated/ebooks/nouveau': typeof AuthenticatedEbooksNouveauRoute
   '/_authenticated/ebooks/': typeof AuthenticatedEbooksIndexRoute
@@ -170,6 +189,7 @@ export interface FileRouteTypes {
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
     | '/bibliotheque'
+    | '/credits'
     | '/dashboard'
     | '/parametres'
     | '/tarifs'
@@ -177,6 +197,7 @@ export interface FileRouteTypes {
     | '/veille'
     | '/video'
     | '/visuels'
+    | '/admin/credits'
     | '/ebooks/$id'
     | '/ebooks/nouveau'
     | '/ebooks/'
@@ -187,6 +208,7 @@ export interface FileRouteTypes {
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
     | '/bibliotheque'
+    | '/credits'
     | '/dashboard'
     | '/parametres'
     | '/tarifs'
@@ -194,6 +216,7 @@ export interface FileRouteTypes {
     | '/veille'
     | '/video'
     | '/visuels'
+    | '/admin/credits'
     | '/ebooks/$id'
     | '/ebooks/nouveau'
     | '/ebooks'
@@ -205,6 +228,7 @@ export interface FileRouteTypes {
     | '/mot-de-passe-oublie'
     | '/reinitialiser-mot-de-passe'
     | '/_authenticated/bibliotheque'
+    | '/_authenticated/credits'
     | '/_authenticated/dashboard'
     | '/_authenticated/parametres'
     | '/_authenticated/tarifs'
@@ -212,6 +236,7 @@ export interface FileRouteTypes {
     | '/_authenticated/veille'
     | '/_authenticated/video'
     | '/_authenticated/visuels'
+    | '/_authenticated/admin/credits'
     | '/_authenticated/ebooks/$id'
     | '/_authenticated/ebooks/nouveau'
     | '/_authenticated/ebooks/'
@@ -269,6 +294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBibliothequeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/credits': {
+      id: '/_authenticated/credits'
+      path: '/credits'
+      fullPath: '/credits'
+      preLoaderRoute: typeof AuthenticatedCreditsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -318,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVisuelsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/credits': {
+      id: '/_authenticated/admin/credits'
+      path: '/admin/credits'
+      fullPath: '/admin/credits'
+      preLoaderRoute: typeof AuthenticatedAdminCreditsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ebooks/': {
       id: '/_authenticated/ebooks/'
       path: '/ebooks'
@@ -344,6 +383,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBibliothequeRoute: typeof AuthenticatedBibliothequeRoute
+  AuthenticatedCreditsRoute: typeof AuthenticatedCreditsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
   AuthenticatedTarifsRoute: typeof AuthenticatedTarifsRoute
@@ -351,6 +391,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedVeilleRoute: typeof AuthenticatedVeilleRoute
   AuthenticatedVideoRoute: typeof AuthenticatedVideoRoute
   AuthenticatedVisuelsRoute: typeof AuthenticatedVisuelsRoute
+  AuthenticatedAdminCreditsRoute: typeof AuthenticatedAdminCreditsRoute
   AuthenticatedEbooksIdRoute: typeof AuthenticatedEbooksIdRoute
   AuthenticatedEbooksNouveauRoute: typeof AuthenticatedEbooksNouveauRoute
   AuthenticatedEbooksIndexRoute: typeof AuthenticatedEbooksIndexRoute
@@ -358,6 +399,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBibliothequeRoute: AuthenticatedBibliothequeRoute,
+  AuthenticatedCreditsRoute: AuthenticatedCreditsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
   AuthenticatedTarifsRoute: AuthenticatedTarifsRoute,
@@ -365,6 +407,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedVeilleRoute: AuthenticatedVeilleRoute,
   AuthenticatedVideoRoute: AuthenticatedVideoRoute,
   AuthenticatedVisuelsRoute: AuthenticatedVisuelsRoute,
+  AuthenticatedAdminCreditsRoute: AuthenticatedAdminCreditsRoute,
   AuthenticatedEbooksIdRoute: AuthenticatedEbooksIdRoute,
   AuthenticatedEbooksNouveauRoute: AuthenticatedEbooksNouveauRoute,
   AuthenticatedEbooksIndexRoute: AuthenticatedEbooksIndexRoute,
@@ -383,13 +426,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

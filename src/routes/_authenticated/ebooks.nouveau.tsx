@@ -23,6 +23,7 @@ import {
   generationCost,
 } from "@/lib/ebook-config";
 import { QUALITIES, THEMES } from "@/lib/ebook-brand";
+import { handleCreditError, useCostMap, openCreditModal } from "@/lib/credits";
 import { cn } from "@/lib/utils";
 
 
@@ -60,10 +61,8 @@ function NewEbookWizard() {
   const [theme, setTheme] = useState<string>("modern");
   const [quality, setQuality] = useState<string>("premium");
 
-  const cost = useMemo(
-    () => generationCost(length, withIllustrations, true),
-    [length, withIllustrations],
-  );
+  const costs = useCostMap();
+  const cost = useMemo(() => generationCost(length, costs), [length, costs]);
   const credits = profile?.credits ?? 0;
   const canAfford = credits >= cost;
 
@@ -78,7 +77,7 @@ function NewEbookWizard() {
 
   async function launch() {
     if (!canAfford) {
-      toast.error("Crédits insuffisants pour cette génération.");
+      openCreditModal(cost);
       return;
     }
     try {
@@ -98,6 +97,7 @@ function NewEbookWizard() {
       toast.success("Ton ebook est prêt !");
       navigate({ to: "/ebooks/$id", params: { id } });
     } catch (error) {
+      if (handleCreditError(error, cost)) return;
       toast.error(error instanceof Error ? error.message : "La génération a échoué.");
     }
   }
