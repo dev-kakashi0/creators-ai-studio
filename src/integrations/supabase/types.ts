@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      billing_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       copies: {
         Row: {
           brief: string | null
@@ -46,6 +64,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      coupons: {
+        Row: {
+          active: boolean
+          amount_off: number | null
+          code: string
+          created_at: string
+          currency: string | null
+          description: string | null
+          expires_at: string | null
+          max_redemptions: number | null
+          percent_off: number | null
+          plan_id: string | null
+          redeemed_count: number
+          trial_days: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          amount_off?: number | null
+          code: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          expires_at?: string | null
+          max_redemptions?: number | null
+          percent_off?: number | null
+          plan_id?: string | null
+          redeemed_count?: number
+          trial_days?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          amount_off?: number | null
+          code?: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          expires_at?: string | null
+          max_redemptions?: number | null
+          percent_off?: number | null
+          plan_id?: string | null
+          redeemed_count?: number
+          trial_days?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       credit_costs: {
         Row: {
@@ -346,6 +420,234 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount: number
+          currency: string
+          id: string
+          issued_at: string
+          label: string
+          number: string
+          payment_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          currency?: string
+          id?: string
+          issued_at?: string
+          label: string
+          number: string
+          payment_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          currency?: string
+          id?: string
+          issued_at?: string
+          label?: string
+          number?: string
+          payment_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_prices: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          pack_id: string
+          region: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency: string
+          id?: string
+          pack_id: string
+          region?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          pack_id?: string
+          region?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_prices_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "credit_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_providers: {
+        Row: {
+          configured: boolean
+          created_at: string
+          currencies: Json
+          description: string | null
+          enabled: boolean
+          id: string
+          methods: Json
+          mode: string
+          name: string
+          region: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          configured?: boolean
+          created_at?: string
+          currencies?: Json
+          description?: string | null
+          enabled?: boolean
+          id: string
+          methods?: Json
+          mode?: string
+          name: string
+          region?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          configured?: boolean
+          created_at?: string
+          currencies?: Json
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          methods?: Json
+          mode?: string
+          name?: string
+          region?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          country: string | null
+          coupon_code: string | null
+          created_at: string
+          credits_granted: number
+          currency: string
+          failure_reason: string | null
+          id: string
+          kind: string
+          method: string | null
+          pack_id: string | null
+          plan_id: string | null
+          provider: string
+          reference: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          country?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          credits_granted?: number
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          kind?: string
+          method?: string | null
+          pack_id?: string | null
+          plan_id?: string | null
+          provider: string
+          reference?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          country?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          credits_granted?: number
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          kind?: string
+          method?: string | null
+          pack_id?: string | null
+          plan_id?: string | null
+          provider?: string
+          reference?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      plan_prices: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          interval: string
+          plan_id: string
+          region: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency: string
+          id?: string
+          interval?: string
+          plan_id: string
+          region?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          interval?: string
+          plan_id?: string
+          region?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_prices_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           created_at: string
@@ -420,6 +722,71 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          amount: number
+          cancel_at_period_end: boolean
+          coupon_code: string | null
+          created_at: string
+          currency: string
+          current_period_end: string | null
+          current_period_start: string
+          grace_until: string | null
+          id: string
+          interval: string
+          plan_id: string
+          provider: string | null
+          provider_reference: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          cancel_at_period_end?: boolean
+          coupon_code?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          current_period_start?: string
+          grace_until?: string | null
+          id?: string
+          interval?: string
+          plan_id: string
+          provider?: string | null
+          provider_reference?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          cancel_at_period_end?: boolean
+          coupon_code?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          current_period_start?: string
+          grace_until?: string | null
+          id?: string
+          interval?: string
+          plan_id?: string
+          provider?: string | null
+          provider_reference?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
