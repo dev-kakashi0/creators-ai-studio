@@ -191,29 +191,36 @@ export function getAdapter(providerId: string): PaymentAdapter | null {
 /* Tarification localisée                                              */
 /* ------------------------------------------------------------------ */
 
+async function priceRow(kind: "subscription" | "pack", itemId: string, currency: string) {
+  if (kind === "subscription") {
+    const { data } = await supabaseAdmin
+      .from("plan_prices")
+      .select("amount")
+      .eq("plan_id", itemId)
+      .eq("currency", currency)
+      .maybeSingle();
+    return data;
+  }
+  const { data } = await supabaseAdmin
+    .from("pack_prices")
+    .select("amount")
+    .eq("pack_id", itemId)
+    .eq("currency", currency)
+    .maybeSingle();
+  return data;
+}
+
 export async function resolvePrice(
   kind: "subscription" | "pack",
   itemId: string,
   currency: CurrencyCode,
 ) {
-  const table = kind === "subscription" ? "plan_prices" : "pack_prices";
-  const column = kind === "subscription" ? "plan_id" : "pack_id";
-  const { data } = await supabaseAdmin
-    .from(table)
-    .select("amount, currency")
-    .eq(column, itemId)
-    .eq("currency", currency)
-    .maybeSingle();
+  const data = await priceRow(kind, itemId, currency);
   if (data) return { amount: Number(data.amount), currency };
-
-  const fallback = await supabaseAdmin
-    .from(table)
-    .select("amount, currency")
-    .eq(column, itemId)
-    .eq("currency", "EUR")
-    .maybeSingle();
-  return { amount: Number(fallback.data?.amount ?? 0), currency: "EUR" as CurrencyCode };
+  const fallback = await priceRow(kind, itemId, "EUR");
+  return { amount: Number(fallback?.amount ?? 0), currency: "EUR" as CurrencyCode };
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Coupons                                                             */
