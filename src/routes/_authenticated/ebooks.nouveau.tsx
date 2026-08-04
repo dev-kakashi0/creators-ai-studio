@@ -21,6 +21,7 @@ import {
   LENGTHS,
   STYLES,
   generationCost,
+  isTrialLength,
 } from "@/lib/ebook-config";
 import { QUALITIES, THEMES } from "@/lib/ebook-brand";
 import { handleCreditError, useCostMap, openCreditModal } from "@/lib/credits";
@@ -87,7 +88,7 @@ function NewEbookWizard() {
         style,
         audience: audience.trim(),
         length,
-        withIllustrations,
+        withIllustrations: withIllustrations && !isTrialLength(length),
         authorName: authorName.trim() || (profile?.full_name ?? ""),
         publisher: publisher.trim(),
         website: website.trim(),
@@ -229,22 +230,33 @@ function NewEbookWizard() {
 
             {step === 4 && (
               <StepBlock index={5} title="Quelle longueur ?" hint="Tu pourras ajouter des chapitres plus tard.">
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {LENGTHS.map((item) => (
                     <Choice
                       key={item.id}
                       active={length === item.id}
                       onClick={() => setLength(item.id)}
                       title={item.label}
-                      subtitle={`${item.pages} · ${item.chapters} chapitres`}
+                      subtitle={`${item.pages} · ${item.chapters} chapitres · ${generationCost(item.id, costs)} cr.`}
                     />
                   ))}
                 </div>
+                {isTrialLength(length) && (
+                  <p className="mt-3 rounded-2xl border border-input bg-muted/40 p-3 text-xs text-muted-foreground">
+                    Format découverte inclus dans les 5 crédits du plan gratuit : 3 chapitres, couverture
+                    incluse, illustrations désactivées et filigrane « Created with Solenya AI » sur l'export.
+                  </p>
+                )}
+
                 <button
                   onClick={() => setWithIllustrations((v) => !v)}
+                  disabled={isTrialLength(length)}
                   className={cn(
                     "mt-4 flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition-colors",
-                    withIllustrations ? "border-primary bg-primary-soft/60" : "border-input",
+                    withIllustrations && !isTrialLength(length)
+                      ? "border-primary bg-primary-soft/60"
+                      : "border-input",
+                    isTrialLength(length) && "cursor-not-allowed opacity-50",
                   )}
                 >
                   <span
@@ -340,7 +352,7 @@ function NewEbookWizard() {
                       LENGTHS.find((l) => l.id === length)!.pages
                     }`}
                   />
-                  <Recap label="Illustrations" value={withIllustrations ? "Oui" : "Non"} />
+                  <Recap label="Illustrations" value={withIllustrations && !isTrialLength(length) ? "Oui" : "Non"} />
                 </dl>
                 <div
                   className={cn(

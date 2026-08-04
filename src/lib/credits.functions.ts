@@ -20,8 +20,12 @@ export const startEbookJob = createServerFn({ method: "POST" })
     const { consumeCredits } = await import("@/lib/credits.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const premium = data.length === "premium";
-    const key = premium ? "ebook_premium" : "ebook_standard";
+    const key =
+      data.length === "premium"
+        ? "ebook_premium"
+        : data.length === "essai"
+          ? "ebook_trial"
+          : "ebook_standard";
     await consumeCredits(context.userId, key, key);
 
     const { data: job, error } = await supabaseAdmin
