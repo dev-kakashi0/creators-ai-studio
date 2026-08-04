@@ -352,7 +352,7 @@ function NewEbookWizard() {
                       LENGTHS.find((l) => l.id === length)!.pages
                     }`}
                   />
-                  <Recap label="Illustrations" value={withIllustrations ? "Oui" : "Non"} />
+                  <Recap label="Illustrations" value={withIllustrations && !isTrialLength(length) ? "Oui" : "Non"} />
                 </dl>
                 <div
                   className={cn(
