@@ -46,7 +46,7 @@ export type LengthId = (typeof LENGTHS)[number]["id"];
 export { DEFAULT_CREDIT_COSTS as CREDITS } from "@/lib/credit-costs";
 
 export function lengthConfig(id: string) {
-  return LENGTHS.find((l) => l.id === id) ?? LENGTHS[1];
+  return LENGTHS.find((l) => l.id === id) ?? LENGTHS[2];
 }
 
 export function styleLabel(id: string) {
@@ -58,12 +58,13 @@ export function languageLabel(id: string) {
 }
 
 /**
- * Coût forfaitaire d'une génération complète : 10 crédits (20-50 pages)
- * ou 20 crédits (100+ pages). Illustrations et couverture incluses.
+ * Coût forfaitaire d'une génération complète : 5 crédits (essai, 3 chapitres),
+ * 10 crédits (20-50 pages) ou 20 crédits (100+ pages). Couverture incluse.
  */
 export function generationCost(
   lengthId: string,
-  costs: { ebook_standard: number; ebook_premium: number } = DEFAULT_CREDIT_COSTS,
+  costs: { ebook_trial: number; ebook_standard: number; ebook_premium: number } = DEFAULT_CREDIT_COSTS,
 ) {
+  if (lengthId === "essai") return costs.ebook_trial;
   return lengthId === "premium" ? costs.ebook_premium : costs.ebook_standard;
 }
