@@ -3,6 +3,7 @@
 export const DEFAULT_CREDIT_COSTS = {
   outline: 1,
   chapter: 2,
+  ebook_trial: 5,
   ebook_standard: 10,
   ebook_premium: 20,
   cover: 2,
@@ -24,6 +25,7 @@ export type CreditCost = {
 export const CREDIT_ACTION_LABELS: Record<CreditActionKey, string> = {
   outline: "Plan d'ebook",
   chapter: "Chapitre",
+  ebook_trial: "Ebook essai (3 chapitres)",
   ebook_standard: "Ebook complet (20-50 pages)",
   ebook_premium: "Ebook premium (100+ pages)",
   cover: "Couverture",
