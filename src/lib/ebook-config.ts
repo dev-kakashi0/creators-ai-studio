@@ -20,10 +20,16 @@ export const STYLES = [
 ] as const;
 
 export const LENGTHS = [
-  { id: "mini", label: "Mini", pages: "≈ 20 pages", chapters: 5, words: 700 },
-  { id: "standard", label: "Standard", pages: "≈ 50 pages", chapters: 8, words: 1100 },
-  { id: "premium", label: "Premium", pages: "100+ pages", chapters: 12, words: 1600 },
+  { id: "essai", label: "Essai", pages: "≈ 12 pages", chapters: 3, words: 500, trial: true },
+  { id: "mini", label: "Mini", pages: "≈ 20 pages", chapters: 5, words: 700, trial: false },
+  { id: "standard", label: "Standard", pages: "≈ 50 pages", chapters: 8, words: 1100, trial: false },
+  { id: "premium", label: "Premium", pages: "100+ pages", chapters: 12, words: 1600, trial: false },
 ] as const;
+
+/** Le format Essai tient dans les 5 crédits du plan gratuit (filigrane conservé). */
+export function isTrialLength(id: string) {
+  return id === "essai";
+}
 
 export const AUDIENCES = [
   "Entrepreneurs débutants",
