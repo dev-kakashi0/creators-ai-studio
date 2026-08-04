@@ -250,9 +250,13 @@ function NewEbookWizard() {
 
                 <button
                   onClick={() => setWithIllustrations((v) => !v)}
+                  disabled={isTrialLength(length)}
                   className={cn(
                     "mt-4 flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition-colors",
-                    withIllustrations ? "border-primary bg-primary-soft/60" : "border-input",
+                    withIllustrations && !isTrialLength(length)
+                      ? "border-primary bg-primary-soft/60"
+                      : "border-input",
+                    isTrialLength(length) && "cursor-not-allowed opacity-50",
                   )}
                 >
                   <span
