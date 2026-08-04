@@ -21,6 +21,7 @@ import {
   LENGTHS,
   STYLES,
   generationCost,
+  isTrialLength,
 } from "@/lib/ebook-config";
 import { QUALITIES, THEMES } from "@/lib/ebook-brand";
 import { handleCreditError, useCostMap, openCreditModal } from "@/lib/credits";
