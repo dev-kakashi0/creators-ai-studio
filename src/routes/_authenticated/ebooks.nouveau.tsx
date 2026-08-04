@@ -88,7 +88,7 @@ function NewEbookWizard() {
         style,
         audience: audience.trim(),
         length,
-        withIllustrations,
+        withIllustrations: withIllustrations && !isTrialLength(length),
         authorName: authorName.trim() || (profile?.full_name ?? ""),
         publisher: publisher.trim(),
         website: website.trim(),
