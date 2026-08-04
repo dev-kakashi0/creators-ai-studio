@@ -229,17 +229,24 @@ function NewEbookWizard() {
 
             {step === 4 && (
               <StepBlock index={5} title="Quelle longueur ?" hint="Tu pourras ajouter des chapitres plus tard.">
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {LENGTHS.map((item) => (
                     <Choice
                       key={item.id}
                       active={length === item.id}
                       onClick={() => setLength(item.id)}
                       title={item.label}
-                      subtitle={`${item.pages} · ${item.chapters} chapitres`}
+                      subtitle={`${item.pages} · ${item.chapters} chapitres · ${generationCost(item.id, costs)} cr.`}
                     />
                   ))}
                 </div>
+                {isTrialLength(length) && (
+                  <p className="mt-3 rounded-2xl border border-input bg-muted/40 p-3 text-xs text-muted-foreground">
+                    Format découverte inclus dans les 5 crédits du plan gratuit : 3 chapitres, couverture
+                    incluse, illustrations désactivées et filigrane « Created with Solenya AI » sur l'export.
+                  </p>
+                )}
+
                 <button
                   onClick={() => setWithIllustrations((v) => !v)}
                   className={cn(
