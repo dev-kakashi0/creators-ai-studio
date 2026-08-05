@@ -91,7 +91,9 @@ function Landing() {
               Créer mon compte gratuit <ArrowRight size={16} />
             </Link>
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">100 crédits IA offerts à l'inscription</p>
+          <p className="mt-4 text-xs text-muted-foreground">
+            5 crédits IA offerts à l'inscription — de quoi générer votre premier ebook d'essai
+          </p>
         </motion.section>
 
         <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
