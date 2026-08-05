@@ -52,10 +52,7 @@ export function useIsAdmin() {
     queryFn: async () => {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) return false;
-      const { data, error } = await supabase.rpc("has_role", {
-        _user_id: auth.user.id,
-        _role: "admin",
-      });
+      const { data, error } = await supabase.rpc("is_current_user_admin");
       if (error) return false;
       return Boolean(data);
     },
