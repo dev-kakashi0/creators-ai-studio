@@ -146,10 +146,14 @@ export async function exportPdf(ebook: PdfEbook) {
     doc.rect(0, PAGE_H - 120, PAGE_W, 6, "F");
   }
 
-  // Voile + typographie composée sur la couverture
+  // Dégradé simulé + typographie composée sur la couverture
   setFill(theme.secondary);
-  doc.setGState(doc.GState({ opacity: 0.62 }));
-  doc.rect(0, PAGE_H - 132, PAGE_W, 132, "F");
+  for (let i = 0; i < 14; i++) {
+    doc.setGState(doc.GState({ opacity: 0.06 + i * 0.045 }));
+    doc.rect(0, PAGE_H - 175 + i * 10, PAGE_W, 11, "F");
+  }
+  doc.setGState(doc.GState({ opacity: 0.92 }));
+  doc.rect(0, PAGE_H - 36, PAGE_W, 36, "F");
   doc.setGState(doc.GState({ opacity: 1 }));
 
   setFill(theme.primary);
