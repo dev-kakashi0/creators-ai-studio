@@ -57,12 +57,10 @@ export const generateCover = createServerFn({ method: "POST" })
     });
 
     const dataUrl = await generateImage(
-      `Couverture de livre numérique premium, format portrait 2:3, qualité haute définition.
-Titre du livre à afficher en grand, typographie éditoriale soignée : "${data.title}".
-${data.subtitle ? `Sous-titre plus petit sous le titre : "${data.subtitle}".` : ""}
-Thème du livre : ${data.topic}.
-Direction artistique : ${data.style}. Composition équilibrée, dégradés subtils, contraste élevé, aspect librairie professionnelle.
-Aucun texte parasite, aucune faute, aucune mention d'éditeur.`,
+      `Illustration de couverture de livre premium, format portrait 2:3, haute définition.
+STRICTEMENT AUCUN TEXTE, aucune lettre, aucun mot, aucun chiffre, aucun logo, aucun titre sur l'image : uniquement une composition graphique.
+Sujet évoqué visuellement (sans l'écrire) : ${data.topic}${data.subtitle ? ` — ${data.subtitle}` : ""}.
+Direction artistique : ${data.style}. Composition équilibrée avec un tiers inférieur volontairement calme et sombre (zone réservée à la typographie ajoutée ensuite), dégradés subtils, contraste élevé, rendu librairie professionnelle.`,
     );
 
     return { dataUrl };
