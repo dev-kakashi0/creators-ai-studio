@@ -38,14 +38,31 @@ export const Route = createFileRoute("/api/public/webhooks/$provider")({
             ? process.env["STRIPE_WEBHOOK_SECRET"]
             : providerId === "fedapay"
               ? process.env["FEDAPAY_WEBHOOK_SECRET"]
-              : undefined;
+              : providerId === "xpaye"
+                ? process.env["XPAYE_WEBHOOK_SECRET"]
+                : undefined;
         if (!secret) return new Response("Provider not configured", { status: 404 });
 
-        const signature =
-          request.headers.get("stripe-signature") ?? request.headers.get("x-fedapay-signature");
-        if (!verifySignedHeader(signature, rawBody, secret)) {
-          return new Response("Invalid signature", { status: 401 });
+        if (providerId === "xpaye") {
+          // XPaye : signature HMAC si fournie, sinon jeton partagé dans l'en-tête.
+          const xpayeSignature = request.headers.get("x-xpaye-signature");
+          const xpayeToken =
+            request.headers.get("x-xpaye-token") ?? request.headers.get("x-webhook-token");
+          const valid = xpayeSignature
+            ? safeEqual(
+                xpayeSignature,
+                createHmac("sha256", secret).update(rawBody).digest("hex"),
+              ) || verifySignedHeader(xpayeSignature, rawBody, secret)
+            : Boolean(xpayeToken && safeEqual(xpayeToken, secret));
+          if (!valid) return new Response("Invalid signature", { status: 401 });
+        } else {
+          const signature =
+            request.headers.get("stripe-signature") ?? request.headers.get("x-fedapay-signature");
+          if (!verifySignedHeader(signature, rawBody, secret)) {
+            return new Response("Invalid signature", { status: 401 });
+          }
         }
+
 
         const { getAdapter, fulfillPayment } = await import("@/lib/billing.server");
         const adapter = getAdapter(providerId);
