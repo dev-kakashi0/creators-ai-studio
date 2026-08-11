@@ -177,11 +177,102 @@ const fedapayAdapter: PaymentAdapter = {
   },
 };
 
+/* ------------------------------ XPaye ----------------------------- */
+
+/**
+ * XPaye Africa — checkout hébergé.
+ * Identifiants du dashboard XPaye : ID marchand (`PP-XXXXXX`) + mot de passe API.
+ * `XPAYE_API_BASE` permet de pointer vers un autre hôte si besoin.
+ */
+const xpayeAdapter: PaymentAdapter = {
+  id: "xpaye",
+  isConfigured: () =>
+    Boolean(process.env["XPAYE_MERCHANT_ID"] && process.env["XPAYE_API_PASSWORD"]),
+  async createCheckout(request) {
+    const merchantId = process.env["XPAYE_MERCHANT_ID"];
+    const password = process.env["XPAYE_API_PASSWORD"];
+    if (!merchantId || !password) throw new Error("PROVIDER_NOT_CONFIGURED");
+    const base = (process.env["XPAYE_API_BASE"] ?? "https://api.xpaye.africa").replace(/\/$/, "");
+
+    const response = await fetch(`${base}/api/v1/payments/initiate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-Merchant-Id": merchantId,
+        "X-Api-Password": password,
+      },
+      body: JSON.stringify({
+        merchant_id: merchantId,
+        api_password: password,
+        amount: Math.round(request.amount),
+        currency: request.currency,
+        description: request.label,
+        reference: request.reference,
+        customer_email: request.email,
+        ...(request.method ? { payment_method: request.method } : {}),
+        callback_url: request.successUrl,
+        cancel_url: request.cancelUrl,
+        webhook_url: `${new URL(request.successUrl).origin}/api/public/webhooks/xpaye`,
+      }),
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+    const data = (payload["data"] as Record<string, unknown> | undefined) ?? payload;
+    const url =
+      (data["payment_url"] as string | undefined) ??
+      (data["checkout_url"] as string | undefined) ??
+      (data["url"] as string | undefined) ??
+      (data["link"] as string | undefined);
+    if (!response.ok || !url) {
+      throw new Error(
+        (payload["message"] as string | undefined) ??
+          "XPaye : création du paiement impossible.",
+      );
+    }
+    return {
+      url,
+      providerReference: String(
+        data["transaction_id"] ?? data["id"] ?? data["reference"] ?? request.reference,
+      ),
+    };
+  },
+  async parseWebhook(_request, rawBody) {
+    const event = JSON.parse(rawBody) as Record<string, unknown>;
+    const data = (event["data"] as Record<string, unknown> | undefined) ?? event;
+    const reference =
+      (data["reference"] as string | undefined) ??
+      (data["merchant_reference"] as string | undefined) ??
+      (data["order_id"] as string | undefined);
+    if (!reference) return null;
+
+    const status = String(data["status"] ?? event["event"] ?? "").toLowerCase();
+    const providerReference = String(data["transaction_id"] ?? data["id"] ?? "");
+    if (["success", "succeeded", "successful", "approved", "completed", "paid"].some((s) => status.includes(s))) {
+      return { reference, status: "succeeded", providerReference };
+    }
+    if (["refund"].some((s) => status.includes(s))) {
+      return { reference, status: "refunded", providerReference };
+    }
+    if (["fail", "declin", "cancel", "expired"].some((s) => status.includes(s))) {
+      return {
+        reference,
+        status: "failed",
+        providerReference,
+        failureReason: "Paiement refusé, annulé ou expiré.",
+      };
+    }
+    return null;
+  },
+};
+
 /** Nouveaux fournisseurs : ajouter un adaptateur ici, aucun autre fichier à modifier. */
 export const ADAPTERS: Record<string, PaymentAdapter> = {
   stripe: stripeAdapter,
   fedapay: fedapayAdapter,
+  xpaye: xpayeAdapter,
 };
+
 
 export function getAdapter(providerId: string): PaymentAdapter | null {
   return ADAPTERS[providerId] ?? null;
