@@ -1,6 +1,19 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { CreditCard, Loader2, Smartphone, Tag, X } from "lucide-react";
+import {
+  Building2,
+  ChevronDown,
+  ChevronUp,
+  CreditCard,
+  Globe,
+  Landmark,
+  Loader2,
+  QrCode,
+  Smartphone,
+  Tag,
+  Wallet,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   CURRENCIES,
@@ -26,18 +39,50 @@ type Props = {
   onClose: () => void;
 };
 
-/** Checkout multi-fournisseurs : carte, mobile money, portefeuilles. */
+const METHOD_ICONS: Record<string, React.ReactNode> = {
+  visa: <CreditCard size={18} />,
+  mastercard: <CreditCard size={18} />,
+  amex: <CreditCard size={18} />,
+  apple_pay: <Wallet size={18} />,
+  google_pay: <Wallet size={18} />,
+  paypal: <Globe size={18} />,
+  mtn_momo: <Smartphone size={18} />,
+  orange_money: <Smartphone size={18} />,
+  moov_money: <Smartphone size={18} />,
+  wave: <QrCode size={18} />,
+  mobile_money: <Smartphone size={18} />,
+  bank_transfer: <Landmark size={18} />,
+};
+
+const PROVIDER_ICONS: Record<string, React.ReactNode> = {
+  stripe: <CreditCard size={18} />,
+  fedapay: <Building2 size={18} />,
+};
+
+/** Checkout multi-fournisseurs avec sélection radio façon provider-list. */
 export function CheckoutDialog({ target, currency, country, onClose }: Props) {
   const { data: providers } = usePaymentProviders(currency);
-  const [provider, setProvider] = useState<string | null>(null);
-  const [method, setMethod] = useState<string | null>(null);
+  const [expandedProvider, setExpandedProvider] = useState<string | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [checking, setChecking] = useState(false);
   const [paying, setPaying] = useState(false);
 
-  const activeProvider = (providers ?? []).find((item) => item.id === provider) ?? providers?.[0];
+  const activeProvider = (providers ?? []).find(
+    (item) => item.id === expandedProvider,
+  );
   const total = Math.max(0, (target?.amount ?? 0) - discount);
+
+  function toggleProvider(id: string) {
+    setExpandedProvider((current) => (current === id ? null : id));
+    setSelectedMethod(null);
+  }
+
+  function selectMethod(providerId: string, methodKey: string) {
+    setExpandedProvider(providerId);
+    setSelectedMethod(methodKey);
+  }
 
   async function applyCode() {
     if (!target || !code.trim()) return;
@@ -61,7 +106,7 @@ export function CheckoutDialog({ target, currency, country, onClose }: Props) {
   }
 
   async function pay() {
-    if (!target || !activeProvider) return;
+    if (!target || !activeProvider || !selectedMethod) return;
     setPaying(true);
     try {
       const result = await createCheckout({
@@ -70,7 +115,7 @@ export function CheckoutDialog({ target, currency, country, onClose }: Props) {
           kind: target.kind,
           itemId: target.itemId,
           currency,
-          ...(method ? { method } : {}),
+          method: selectedMethod,
           ...(discount > 0 && code ? { couponCode: code } : {}),
           ...(country ? { country } : {}),
           origin: window.location.origin,
@@ -124,54 +169,102 @@ export function CheckoutDialog({ target, currency, country, onClose }: Props) {
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">{target.label}</p>
 
-            <div className="mt-5 space-y-3">
+            <div className="mt-5 space-y-2">
               {(providers ?? []).length === 0 && (
                 <div className="rounded-xl border border-input p-4 text-sm text-muted-foreground">
-                  Aucun moyen de paiement n'est encore activé pour {CURRENCIES[currency].label}.
+                  Aucun moyen de paiement n'est encore activé pour{" "}
+                  {CURRENCIES[currency].label}.
                 </div>
               )}
-              {(providers ?? []).map((item) => {
-                const selected = activeProvider?.id === item.id;
+
+              {(providers ?? []).map((provider) => {
+                const expanded = expandedProvider === provider.id;
+                const methods = (provider.methods as string[]) ?? [];
                 return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setProvider(item.id);
-                      setMethod(null);
-                    }}
+                  <div
+                    key={provider.id}
                     className={cn(
-                      "flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors",
-                      selected ? "border-primary bg-primary-soft" : "border-input hover:bg-accent",
+                      "overflow-hidden rounded-xl border transition-colors",
+                      expanded ? "border-primary bg-primary-soft/40" : "border-input",
                     )}
                   >
-                    <span className="mt-0.5 text-primary">
-                      {item.region === "africa" ? <Smartphone size={18} /> : <CreditCard size={18} />}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold">{item.name}</span>
-                      <span className="block text-xs text-muted-foreground">{item.description}</span>
-                      <span className="mt-2 flex flex-wrap gap-1.5">
-                        {(item.methods as string[]).map((key) => (
-                          <span
-                            key={key}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setProvider(item.id);
-                              setMethod(key);
-                            }}
-                            className={cn(
-                              "rounded-full border px-2 py-0.5 text-[11px]",
-                              method === key && selected
-                                ? "border-primary text-primary"
-                                : "border-input text-muted-foreground",
-                            )}
-                          >
-                            {PAYMENT_METHODS[key] ?? key}
+                    <button
+                      onClick={() => toggleProvider(provider.id)}
+                      className="flex w-full items-center justify-between gap-3 p-4 text-left"
+                    >
+                      <span className="flex items-center gap-3">
+                        <span
+                          className={cn(
+                            "flex size-9 items-center justify-center rounded-full",
+                            expanded ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                          )}
+                        >
+                          {PROVIDER_ICONS[provider.id] ?? <CreditCard size={18} />}
+                        </span>
+                        <span>
+                          <span className="block text-sm font-semibold">{provider.name}</span>
+                          <span className="block text-xs text-muted-foreground">
+                            {provider.description}
                           </span>
-                        ))}
+                        </span>
                       </span>
-                    </span>
-                  </button>
+                      <span className="text-muted-foreground">
+                        {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                      </span>
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {expanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="border-t border-input px-2 pb-3 pt-1">
+                            {methods.map((methodKey) => {
+                              const selected = selectedMethod === methodKey;
+                              return (
+                                <button
+                                  key={methodKey}
+                                  onClick={() => selectMethod(provider.id, methodKey)}
+                                  className={cn(
+                                    "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors",
+                                    selected
+                                      ? "bg-primary text-primary-foreground"
+                                      : "hover:bg-accent",
+                                  )}
+                                >
+                                  <span
+                                    className={cn(
+                                      "flex size-5 shrink-0 items-center justify-center rounded-full border",
+                                      selected
+                                        ? "border-primary-foreground bg-primary-foreground text-primary"
+                                        : "border-muted-foreground",
+                                    )}
+                                  >
+                                    {selected && <span className="size-2 rounded-full bg-current" />}
+                                  </span>
+                                  <span
+                                    className={cn(
+                                      "flex size-8 items-center justify-center rounded-lg",
+                                      selected ? "bg-primary-foreground/20" : "bg-muted",
+                                    )}
+                                  >
+                                    {METHOD_ICONS[methodKey] ?? <CreditCard size={16} />}
+                                  </span>
+                                  <span className="text-sm font-semibold">
+                                    {PAYMENT_METHODS[methodKey] ?? methodKey}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 );
               })}
             </div>
@@ -216,7 +309,7 @@ export function CheckoutDialog({ target, currency, country, onClose }: Props) {
 
             <button
               onClick={pay}
-              disabled={paying || !activeProvider}
+              disabled={paying || !activeProvider || !selectedMethod}
               className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0"
             >
               {paying ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
