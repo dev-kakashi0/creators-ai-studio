@@ -1,0 +1,1 @@
+UPDATE public.payment_providers SET enabled = true, configured = true WHERE id = 'xpaye';
